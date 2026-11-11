@@ -185,16 +185,16 @@
             <div class="bg-white rounded-3xl shadow-xl border border-slate-100 p-6 sm:p-8">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 pb-4 border-b border-slate-100 gap-4">
                     <div>
-                        <h2 class="text-2xl font-bold text-slate-800">📖 Baza Wiedzy Pasożytów</h2>
-                        <p class="text-sm text-slate-500 mt-1">Przeglądaj automatycznie pogrupowane gatunki i ich formy.</p>
+                        <h2 class="text-2xl font-bold text-slate-800">📖 Kompendium Parasitologiczne</h2>
+                        <p class="text-sm text-slate-500 mt-1">Kompletna wiedza: mikroskopia, klinika, wrota zakażenia, diagnostyka i ważne uwagi.</p>
                     </div>
                     <span class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-sm font-bold" id="study-species-count">0 gatunków</span>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8 bg-slate-50 p-4 rounded-2xl border border-slate-200">
                     <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wider">Szukaj gatunku / formy</label>
-                        <input type="text" id="study-search" placeholder="np. Ascaris, cysta..." oninput="renderStudyView()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <label class="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wider">Szukaj (nazwa / objaw / wrota / uwagi)</label>
+                        <input type="text" id="study-search" placeholder="np. Ascaris, jajo, kał..." oninput="renderStudyView()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wider">Kategoria</label>
@@ -211,50 +211,111 @@
                     </div>
                 </div>
                 
-                <div id="study-species-list" class="flex flex-col gap-6">
+                <div id="study-species-list" class="flex flex-col gap-8">
                 </div>
             </div>
         </div>
 
         <!-- WIDOK 2: DODAWANIE FISZKI -->
-        <div id="add-card-view" class="view-section w-full max-w-xl">
+        <div id="add-card-view" class="view-section w-full max-w-2xl">
             <button onclick="showView('menu-view')" class="mb-4 text-slate-500 hover:text-slate-800 font-medium flex items-center gap-2 transition">
                 <span>←</span> Wróć do menu
             </button>
             <div class="bg-white rounded-3xl shadow-xl border border-slate-100 p-6 sm:p-8">
                 <h2 class="text-2xl font-bold text-slate-800 mb-6">Dodaj nowy preparat</h2>
                 
-                <div class="mb-6">
-                    <label class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">Zdjęcie preparatu</label>
-                    <div class="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center hover:bg-slate-50 transition cursor-pointer flex flex-col items-center justify-center min-h-[120px]" onclick="document.getElementById('image-upload').click()">
-                        <p class="text-slate-500 font-medium mb-2" id="upload-hint">Kliknij, aby wybrać zdjęcie (JPG/PNG)</p>
-                        <input type="file" id="image-upload" accept="image/*" class="hidden" onchange="previewImage(event)">
-                        <img id="image-preview" class="max-h-56 w-auto rounded-lg hidden shadow-md mt-2 object-contain bg-black">
+                <!-- SEGMENT 1: FISZKA / PREPARAT -->
+                <div class="bg-blue-50/60 border border-blue-100 p-5 rounded-2xl mb-8">
+                    <h3 class="text-base font-bold text-blue-900 mb-4 flex items-center gap-2">
+                        🖼️ Segment 1: Preparat mikroskopowy (Do Quizu i Bazy)
+                    </h3>
+                    
+                    <div class="mb-5">
+                        <label class="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Zdjęcie preparatu</label>
+                        <div class="border-2 border-dashed border-slate-300 bg-white rounded-2xl p-6 text-center hover:bg-slate-50 transition cursor-pointer flex flex-col items-center justify-center min-h-[120px]" onclick="document.getElementById('image-upload').click()">
+                            <p class="text-slate-500 font-medium mb-2" id="upload-hint">Kliknij, aby wybrać zdjęcie (JPG/PNG)</p>
+                            <input type="file" id="image-upload" accept="image/*" class="hidden" onchange="previewImage(event)">
+                            <img id="image-preview" class="max-h-56 w-auto rounded-lg hidden shadow-md mt-2 object-contain bg-black">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1.5">Kategoria</label>
+                            <div class="flex gap-2">
+                                <select id="category-input" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-4 focus:ring-blue-100 outline-none transition text-slate-800 font-medium bg-white text-sm">
+                                </select>
+                                <button onclick="openCategoryModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 rounded-xl font-bold transition text-xs whitespace-nowrap">
+                                    + Nowa
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1.5">Forma na zdjęciu</label>
+                            <input type="text" id="form-input" placeholder="np. Jajo, Cysta, Trofozoit" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-4 focus:ring-blue-100 outline-none transition text-slate-800 font-medium text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1.5">Nazwa łacińska</label>
+                            <input type="text" id="latin-input" oninput="autoFillKnowledgeFields(this.value)" placeholder="np. Ascaris lumbricoides" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-4 focus:ring-blue-100 outline-none transition text-slate-800 font-medium text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1.5">Nazwa polska (opcjonalnie)</label>
+                            <input type="text" id="polish-input" placeholder="np. Glista ludzka" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-4 focus:ring-blue-100 outline-none transition text-slate-800 font-medium text-sm">
+                        </div>
                     </div>
                 </div>
 
-                <div class="space-y-4 mb-8">
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-1.5">Kategoria</label>
-                        <div class="flex gap-2">
-                            <select id="category-input" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition text-slate-800 font-medium bg-white">
-                            </select>
-                            <button onclick="openCategoryModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 rounded-xl font-bold transition whitespace-nowrap">
-                                + Nowa
-                            </button>
+                <!-- SEGMENT 2: DO BAZY WIEDZY -->
+                <div class="bg-emerald-50/60 border border-emerald-100 p-5 rounded-2xl mb-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-base font-bold text-emerald-900 flex items-center gap-2">
+                            📚 Segment 2: Do Bazy Wiedzy (Klinika i Diagnostyka)
+                        </h3>
+                        <span class="text-[11px] font-semibold bg-emerald-200/60 text-emerald-800 px-2.5 py-0.5 rounded-full">Tylko do bazy</span>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Postać inwazyjna 🪱</label>
+                                <input type="text" id="add-invasive-input" placeholder="np. Jajo inwazyjne / L2" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Postać diagnostyczna 🔬</label>
+                                <input type="text" id="add-diagnostic-input" placeholder="np. Jajo w kale" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                            </div>
                         </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-1.5">Nazwa łacińska</label>
-                        <input type="text" id="latin-input" placeholder="np. Ascaris lumbricoides" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-blue-100 outline-none transition text-slate-800 font-medium">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-1.5">Nazwa polska (opcjonalnie)</label>
-                        <input type="text" id="polish-input" placeholder="np. Glista ludzka" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-blue-100 outline-none transition text-slate-800 font-medium">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-1.5">Forma na zdjęciu</label>
-                        <input type="text" id="form-input" placeholder="np. Jajo, Cysta, Postać dorosła" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-blue-100 outline-none transition text-slate-800 font-medium">
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Wrota zakażenia 🚪</label>
+                                <input type="text" id="add-entry-input" placeholder="np. Jam ustna (drogą pokarmową)" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Miejsce rozmnażania / bytowania 📍</label>
+                                <input type="text" id="add-site-input" placeholder="np. Jelito cienkie" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Nazwa choroby 🏥</label>
+                            <input type="text" id="add-disease-input" placeholder="np. Glistnica (Ascariosis)" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Metody wykrywania 🧪</label>
+                            <input type="text" id="add-methods-input" placeholder="np. Badanie mikroskopowe kału (metoda decantacji / Kato-Miura)" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Najważniejsze objawy ⚠️</label>
+                            <textarea id="add-symptoms-input" rows="2" placeholder="np. Bóle brzucha, kaszel (glista w płucach), eozynofilia, zaburzenia wchłaniania" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Ważne uwagi 📌</label>
+                            <textarea id="add-notes-input" rows="2" placeholder="np. Żywiciel ostateczny, pośredni, cykl Loossa, pułapki różnicowania preparatów" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+                        </div>
                     </div>
                 </div>
 
@@ -507,8 +568,8 @@
 
     <!-- Modal Edycji Fiszki -->
     <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-6 sm:p-8 max-h-[90vh] overflow-y-auto">
-            <h3 class="text-2xl font-bold mb-6 text-slate-800 border-b pb-3 border-slate-100">Edytuj fiszkę</h3>
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl p-6 sm:p-8 max-h-[90vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-6 text-slate-800 border-b pb-3 border-slate-100">Edytuj fiszkę i dane gatunku</h3>
             
             <div class="mb-6">
                 <label class="block text-sm font-bold text-slate-700 mb-2">Zdjęcie (opcjonalnie zmień)</label>
@@ -519,28 +580,70 @@
                 </div>
             </div>
 
-            <div class="space-y-4 mb-8">
-                <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-1">Kategoria</label>
-                    <div class="flex gap-2">
-                        <select id="edit-category-input" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-4 focus:ring-blue-100 outline-none transition text-slate-800 font-medium bg-white">
-                        </select>
-                        <button onclick="openCategoryModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 rounded-xl font-bold transition">
-                            + Nowa
-                        </button>
+            <!-- Segment 1: Preparat -->
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6 space-y-3">
+                <h4 class="font-bold text-slate-700 text-xs uppercase tracking-wider">Segment 1: Preparat mikroskopowy</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Kategoria</label>
+                        <select id="edit-category-input" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-medium text-sm bg-white"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Forma na zdjęciu</label>
+                        <input type="text" id="edit-form-input" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-medium text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Nazwa łacińska</label>
+                        <input type="text" id="edit-latin-input" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-medium text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Nazwa polska</label>
+                        <input type="text" id="edit-polish-input" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-medium text-sm">
                     </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-1">Nazwa łacińska</label>
-                    <input type="text" id="edit-latin-input" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-4 focus:ring-blue-100 outline-none transition text-slate-800 font-medium">
+            </div>
+
+            <!-- Segment 2: Do Bazy Wiedzy -->
+            <div class="bg-emerald-50/70 p-4 rounded-xl border border-emerald-200 mb-6 space-y-3">
+                <h4 class="font-bold text-emerald-900 text-xs uppercase tracking-wider">Segment 2: Do Bazy Wiedzy (Klinika i Diagnostyka)</h4>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Postać inwazyjna 🪱</label>
+                        <input type="text" id="edit-invasive-input" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Postać diagnostyczna 🔬</label>
+                        <input type="text" id="edit-diagnostic-input" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Wrota zakażenia 🚪</label>
+                        <input type="text" id="edit-entry-input" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Miejsce rozmnażania / bytowania 📍</label>
+                        <input type="text" id="edit-site-input" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm">
+                    </div>
                 </div>
+
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-1">Nazwa polska</label>
-                    <input type="text" id="edit-polish-input" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-4 focus:ring-blue-100 outline-none transition text-slate-800 font-medium">
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Nazwa choroby 🏥</label>
+                    <input type="text" id="edit-disease-input" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm">
                 </div>
+
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-1">Forma na zdjęciu</label>
-                    <input type="text" id="edit-form-input" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-4 focus:ring-blue-100 outline-none transition text-slate-800 font-medium">
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Metody wykrywania 🧪</label>
+                    <input type="text" id="edit-methods-input" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Najważniejsze objawy ⚠️</label>
+                    <textarea id="edit-symptoms-input" rows="2" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Ważne uwagi 📌</label>
+                    <textarea id="edit-notes-input" rows="2" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm"></textarea>
                 </div>
             </div>
 
@@ -680,7 +783,6 @@
             }
         }
 
-        /* SPRAWDZONY SYSTEM WIDOKÓW ZE STAREJ WERSJI */
         function showView(viewId) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             const target = document.getElementById(viewId);
@@ -701,7 +803,46 @@
         }
 
         /* ----------------------------------------------------- */
-        /* MODUŁ: UCZ SIĘ (BAZA WIEDZY Z BEZPIECZNĄ PĘTLĄ)       */
+        /* AUTOMATYCZNE WYPEŁNIANIE W DODAWANIU FISZKI           */
+        /* ----------------------------------------------------- */
+        function autoFillKnowledgeFields(latinVal) {
+            const query = (latinVal || "").trim().toLowerCase();
+            if (!query) return;
+
+            const existing = db.find(c => (c.latinName || "").trim().toLowerCase() === query);
+            if (existing) {
+                if (!document.getElementById('polish-input').value && existing.polishName) {
+                    document.getElementById('polish-input').value = existing.polishName;
+                }
+                if (!document.getElementById('add-invasive-input').value && existing.invasiveForm) {
+                    document.getElementById('add-invasive-input').value = existing.invasiveForm;
+                }
+                if (!document.getElementById('add-diagnostic-input').value && existing.diagnosticForm) {
+                    document.getElementById('add-diagnostic-input').value = existing.diagnosticForm;
+                }
+                if (!document.getElementById('add-entry-input').value && existing.entryPortal) {
+                    document.getElementById('add-entry-input').value = existing.entryPortal;
+                }
+                if (!document.getElementById('add-site-input').value && existing.reproductionSite) {
+                    document.getElementById('add-site-input').value = existing.reproductionSite;
+                }
+                if (!document.getElementById('add-disease-input').value && existing.diseaseName) {
+                    document.getElementById('add-disease-input').value = existing.diseaseName;
+                }
+                if (!document.getElementById('add-methods-input').value && existing.detectionMethods) {
+                    document.getElementById('add-methods-input').value = existing.detectionMethods;
+                }
+                if (!document.getElementById('add-symptoms-input').value && existing.symptoms) {
+                    document.getElementById('add-symptoms-input').value = existing.symptoms;
+                }
+                if (!document.getElementById('add-notes-input').value && existing.importantNotes) {
+                    document.getElementById('add-notes-input').value = existing.importantNotes;
+                }
+            }
+        }
+
+        /* ----------------------------------------------------- */
+        /* MODUŁ: UCZ SIĘ (KOMPENDIUM PARASITOLOGICZNE)          */
         /* ----------------------------------------------------- */
         function updateStudyCategoryDropdown() {
             const select = document.getElementById('study-category-filter');
@@ -755,6 +896,14 @@
                         latinName: latinKey,
                         polishName: polishKey,
                         categories: new Set(),
+                        invasiveForm: "",
+                        diagnosticForm: "",
+                        entryPortal: "",
+                        reproductionSite: "",
+                        diseaseName: "",
+                        detectionMethods: "",
+                        symptoms: "",
+                        importantNotes: "",
                         cards: []
                     };
                 }
@@ -762,6 +911,15 @@
                 if (!speciesMap[groupKey].latinName && latinKey) speciesMap[groupKey].latinName = latinKey;
                 if (!speciesMap[groupKey].polishName && polishKey) speciesMap[groupKey].polishName = polishKey;
                 
+                if (card.invasiveForm && !speciesMap[groupKey].invasiveForm) speciesMap[groupKey].invasiveForm = card.invasiveForm;
+                if (card.diagnosticForm && !speciesMap[groupKey].diagnosticForm) speciesMap[groupKey].diagnosticForm = card.diagnosticForm;
+                if (card.entryPortal && !speciesMap[groupKey].entryPortal) speciesMap[groupKey].entryPortal = card.entryPortal;
+                if (card.reproductionSite && !speciesMap[groupKey].reproductionSite) speciesMap[groupKey].reproductionSite = card.reproductionSite;
+                if (card.diseaseName && !speciesMap[groupKey].diseaseName) speciesMap[groupKey].diseaseName = card.diseaseName;
+                if (card.detectionMethods && !speciesMap[groupKey].detectionMethods) speciesMap[groupKey].detectionMethods = card.detectionMethods;
+                if (card.symptoms && !speciesMap[groupKey].symptoms) speciesMap[groupKey].symptoms = card.symptoms;
+                if (card.importantNotes && !speciesMap[groupKey].importantNotes) speciesMap[groupKey].importantNotes = card.importantNotes;
+
                 if (card.category) speciesMap[groupKey].categories.add(card.category);
                 speciesMap[groupKey].cards.push(card);
             });
@@ -772,8 +930,12 @@
                 speciesArray = speciesArray.filter(sp => {
                     const matchLatin = (sp.latinName || "").toLowerCase().includes(searchVal);
                     const matchPolish = (sp.polishName || "").toLowerCase().includes(searchVal);
+                    const matchDisease = (sp.diseaseName || "").toLowerCase().includes(searchVal);
+                    const matchEntry = (sp.entryPortal || "").toLowerCase().includes(searchVal);
+                    const matchSymptoms = (sp.symptoms || "").toLowerCase().includes(searchVal);
+                    const matchNotes = (sp.importantNotes || "").toLowerCase().includes(searchVal);
                     const matchForm = sp.cards.some(c => (c.form || "").toLowerCase().includes(searchVal));
-                    return matchLatin || matchPolish || matchForm;
+                    return matchLatin || matchPolish || matchDisease || matchEntry || matchSymptoms || matchNotes || matchForm;
                 });
             }
 
@@ -799,11 +961,76 @@
 
             speciesArray.forEach(sp => {
                 const cardDiv = document.createElement('div');
-                cardDiv.className = "bg-white border-2 border-slate-100 rounded-3xl p-6 shadow-md hover:shadow-lg transition flex flex-col gap-4";
+                cardDiv.className = "bg-white border-2 border-slate-200/80 rounded-3xl p-6 shadow-md hover:shadow-xl transition flex flex-col gap-5";
 
                 const catsBadges = Array.from(sp.categories).map(c => 
                     `<span class="px-2.5 py-0.5 bg-slate-100 text-slate-600 text-xs font-bold rounded-lg border border-slate-200">${c}</span>`
                 ).join(' ');
+
+                const hasClinicalData = sp.invasiveForm || sp.diagnosticForm || sp.entryPortal || sp.reproductionSite || sp.diseaseName || sp.detectionMethods || sp.symptoms || sp.importantNotes;
+
+                let clinicalHtml = '';
+                if (hasClinicalData) {
+                    clinicalHtml = `
+                        <div class="bg-gradient-to-br from-emerald-50/80 to-teal-50/50 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 text-sm text-slate-800 space-y-3">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-900 border-b border-emerald-200/60 pb-2 flex items-center gap-2">
+                                🧬 Dane Kliniczno-Parasitologiczne
+                            </h4>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                ${sp.invasiveForm ? `
+                                    <div class="bg-white/80 p-2.5 rounded-xl border border-emerald-100">
+                                        <span class="block text-[11px] font-bold text-emerald-800 uppercase tracking-wide">Postać inwazyjna 🪱</span>
+                                        <span class="font-medium text-slate-900">${sp.invasiveForm}</span>
+                                    </div>` : ''}
+                                
+                                ${sp.diagnosticForm ? `
+                                    <div class="bg-white/80 p-2.5 rounded-xl border border-emerald-100">
+                                        <span class="block text-[11px] font-bold text-teal-800 uppercase tracking-wide">Postać diagnostyczna 🔬</span>
+                                        <span class="font-medium text-slate-900">${sp.diagnosticForm}</span>
+                                    </div>` : ''}
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                ${sp.entryPortal ? `
+                                    <div>
+                                        <span class="font-bold text-slate-700">Wrota zakażenia 🚪:</span> 
+                                        <span class="font-medium">${sp.entryPortal}</span>
+                                    </div>` : ''}
+                                
+                                ${sp.reproductionSite ? `
+                                    <div>
+                                        <span class="font-bold text-slate-700">Miejsce rozmnażania / bytowania 📍:</span> 
+                                        <span class="font-medium">${sp.reproductionSite}</span>
+                                    </div>` : ''}
+                            </div>
+
+                            ${sp.diseaseName ? `
+                                <div class="pt-1">
+                                    <span class="font-bold text-slate-700">Nazwa choroby 🏥:</span> 
+                                    <span class="font-semibold text-emerald-900 bg-emerald-100/60 px-2 py-0.5 rounded-md">${sp.diseaseName}</span>
+                                </div>` : ''}
+
+                            ${sp.detectionMethods ? `
+                                <div>
+                                    <span class="font-bold text-slate-700">Metody wykrywania 🧪:</span> 
+                                    <span class="font-medium">${sp.detectionMethods}</span>
+                                </div>` : ''}
+
+                            ${sp.symptoms ? `
+                                <div class="bg-amber-50/60 border border-amber-200/60 p-3 rounded-xl">
+                                    <span class="block text-xs font-bold text-amber-900 uppercase tracking-wide mb-1">Najważniejsze objawy ⚠️</span>
+                                    <p class="text-xs sm:text-sm text-slate-800 font-medium whitespace-pre-line leading-relaxed">${sp.symptoms}</p>
+                                </div>` : ''}
+
+                            ${sp.importantNotes ? `
+                                <div class="bg-blue-50/70 border border-blue-200/70 p-3 rounded-xl">
+                                    <span class="block text-xs font-bold text-blue-900 uppercase tracking-wide mb-1">Ważne uwagi 📌</span>
+                                    <p class="text-xs sm:text-sm text-slate-800 font-medium whitespace-pre-line leading-relaxed">${sp.importantNotes}</p>
+                                </div>` : ''}
+                        </div>
+                    `;
+                }
 
                 const headerHtml = `
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-3 gap-2">
@@ -818,7 +1045,8 @@
                     </div>
                 `;
 
-                let itemsHtml = '<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-1">';
+                let itemsHtml = '<h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mt-1">Preparaty i Formy Mikroskopowe:</h4>';
+                itemsHtml += '<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">';
                 sp.cards.forEach(c => {
                     const formLabel = c.form ? c.form : 'Preparat';
                     itemsHtml += `
@@ -837,7 +1065,7 @@
                 });
                 itemsHtml += '</div>';
 
-                cardDiv.innerHTML = headerHtml + itemsHtml;
+                cardDiv.innerHTML = headerHtml + clinicalHtml + itemsHtml;
                 container.appendChild(cardDiv);
             });
         }
@@ -1188,6 +1416,15 @@
             const latin = document.getElementById('latin-input').value.trim();
             const polish = document.getElementById('polish-input').value.trim();
             const form = document.getElementById('form-input').value.trim();
+
+            const invasive = document.getElementById('add-invasive-input').value.trim();
+            const diagnostic = document.getElementById('add-diagnostic-input').value.trim();
+            const entry = document.getElementById('add-entry-input').value.trim();
+            const site = document.getElementById('add-site-input').value.trim();
+            const disease = document.getElementById('add-disease-input').value.trim();
+            const methods = document.getElementById('add-methods-input').value.trim();
+            const symptoms = document.getElementById('add-symptoms-input').value.trim();
+            const notes = document.getElementById('add-notes-input').value.trim();
             
             if (!tempBase64) { showMessage("⚠️ Musisz dodać zdjęcie preparatu!"); return; }
             if (!latin && !polish && !form) { showMessage("⚠️ Musisz wpisać chociaż jedną nazwę lub formę!"); return; }
@@ -1198,15 +1435,47 @@
                 image: tempBase64,
                 latinName: latin,
                 polishName: polish,
-                form: form
+                form: form,
+                invasiveForm: invasive,
+                diagnosticForm: diagnostic,
+                entryPortal: entry,
+                reproductionSite: site,
+                diseaseName: disease,
+                detectionMethods: methods,
+                symptoms: symptoms,
+                importantNotes: notes
             };
 
             db.push(newCard);
+            
+            if (latin) {
+                db.forEach(c => {
+                    if ((c.latinName || "").trim().toLowerCase() === latin.toLowerCase()) {
+                        if (invasive) c.invasiveForm = invasive;
+                        if (diagnostic) c.diagnosticForm = diagnostic;
+                        if (entry) c.entryPortal = entry;
+                        if (site) c.reproductionSite = site;
+                        if (disease) c.diseaseName = disease;
+                        if (methods) c.detectionMethods = methods;
+                        if (symptoms) c.symptoms = symptoms;
+                        if (notes) c.importantNotes = notes;
+                    }
+                });
+            }
+
             saveToLocalStorage();
 
             document.getElementById('latin-input').value = "";
             document.getElementById('polish-input').value = "";
             document.getElementById('form-input').value = "";
+            document.getElementById('add-invasive-input').value = "";
+            document.getElementById('add-diagnostic-input').value = "";
+            document.getElementById('add-entry-input').value = "";
+            document.getElementById('add-site-input').value = "";
+            document.getElementById('add-disease-input').value = "";
+            document.getElementById('add-methods-input').value = "";
+            document.getElementById('add-symptoms-input').value = "";
+            document.getElementById('add-notes-input').value = "";
             document.getElementById('image-upload').value = "";
             
             const img = document.getElementById('image-preview');
@@ -1239,7 +1508,7 @@
             const exportData = {
                 categories: catsToExport,
                 cards: dbToExport,
-                version: 2
+                version: 4
             };
 
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData));
@@ -1264,7 +1533,7 @@
 
                     if (Array.isArray(imported)) {
                         importedCards = imported;
-                    } else if (imported.version === 2 && imported.cards) {
+                    } else if (imported.cards) {
                         importedCards = imported.cards;
                         importedCats = imported.categories || [];
                     } else {
@@ -1286,7 +1555,15 @@
                                 latinName: card.latinName !== undefined ? card.latinName : (card.answer || ""),
                                 polishName: card.polishName || "",
                                 form: card.form || "",
-                                category: card.category || "Ogólne"
+                                category: card.category || "Ogólne",
+                                invasiveForm: card.invasiveForm || "",
+                                diagnosticForm: card.diagnosticForm || "",
+                                entryPortal: card.entryPortal || "",
+                                reproductionSite: card.reproductionSite || "",
+                                diseaseName: card.diseaseName || "",
+                                detectionMethods: card.detectionMethods || "",
+                                symptoms: card.symptoms || "",
+                                importantNotes: card.importantNotes || ""
                             };
                             if (!categories.includes(fixedCard.category)) categories.push(fixedCard.category);
                             db.push(fixedCard);
@@ -1595,6 +1872,15 @@
             document.getElementById('edit-latin-input').value = card.latinName || "";
             document.getElementById('edit-polish-input').value = card.polishName || "";
             document.getElementById('edit-form-input').value = card.form || "";
+
+            document.getElementById('edit-invasive-input').value = card.invasiveForm || "";
+            document.getElementById('edit-diagnostic-input').value = card.diagnosticForm || "";
+            document.getElementById('edit-entry-input').value = card.entryPortal || "";
+            document.getElementById('edit-site-input').value = card.reproductionSite || "";
+            document.getElementById('edit-disease-input').value = card.diseaseName || "";
+            document.getElementById('edit-methods-input').value = card.detectionMethods || "";
+            document.getElementById('edit-symptoms-input').value = card.symptoms || "";
+            document.getElementById('edit-notes-input').value = card.importantNotes || "";
             
             document.getElementById('edit-image-preview').src = card.image;
             document.getElementById('editModal').classList.remove('hidden');
@@ -1621,6 +1907,15 @@
             const latin = document.getElementById('edit-latin-input').value.trim();
             const polish = document.getElementById('edit-polish-input').value.trim();
             const form = document.getElementById('edit-form-input').value.trim();
+
+            const invasive = document.getElementById('edit-invasive-input').value.trim();
+            const diagnostic = document.getElementById('edit-diagnostic-input').value.trim();
+            const entry = document.getElementById('edit-entry-input').value.trim();
+            const site = document.getElementById('edit-site-input').value.trim();
+            const disease = document.getElementById('edit-disease-input').value.trim();
+            const methods = document.getElementById('edit-methods-input').value.trim();
+            const symptoms = document.getElementById('edit-symptoms-input').value.trim();
+            const notes = document.getElementById('edit-notes-input').value.trim();
             
             if (!latin && !polish && !form) { showMessage("Musisz wpisać przynajmniej jedną nazwę!"); return; }
             
@@ -1631,6 +1926,31 @@
                 db[cardIndex].polishName = polish;
                 db[cardIndex].form = form;
                 db[cardIndex].image = tempEditBase64;
+
+                db[cardIndex].invasiveForm = invasive;
+                db[cardIndex].diagnosticForm = diagnostic;
+                db[cardIndex].entryPortal = entry;
+                db[cardIndex].reproductionSite = site;
+                db[cardIndex].diseaseName = disease;
+                db[cardIndex].detectionMethods = methods;
+                db[cardIndex].symptoms = symptoms;
+                db[cardIndex].importantNotes = notes;
+
+                if (latin) {
+                    db.forEach(c => {
+                        if ((c.latinName || "").trim().toLowerCase() === latin.toLowerCase()) {
+                            c.invasiveForm = invasive;
+                            c.diagnosticForm = diagnostic;
+                            c.entryPortal = entry;
+                            c.reproductionSite = site;
+                            c.diseaseName = disease;
+                            c.detectionMethods = methods;
+                            c.symptoms = symptoms;
+                            c.importantNotes = notes;
+                        }
+                    });
+                }
+
                 saveToLocalStorage(true);
                 renderEditView();
             }
