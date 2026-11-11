@@ -66,6 +66,12 @@
             opacity: 1;
             transform: translateY(0);
         }
+        .count-btn-active {
+            background-color: #2563eb !important;
+            color: #ffffff !important;
+            border-color: #2563eb !important;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col relative">
@@ -419,21 +425,48 @@
             </div>
         </div>
 
-        <!-- WIDOK: WYBÓR KATEGORII DO QUIZU -->
+        <!-- WIDOK: WYBÓR KATEGORII I LICZBY PYTAŃ -->
         <div id="quiz-setup-view" class="view-section w-full max-w-xl text-center">
             <button onclick="goBackFromCategorySetup()" class="mb-4 text-slate-500 hover:text-slate-800 font-medium flex items-center justify-center gap-2 transition mx-auto">
                 <span>←</span> Wróć
             </button>
             <div class="bg-white rounded-3xl shadow-xl border border-slate-100 p-6 sm:p-8">
-                <h2 class="text-2xl font-bold text-slate-800 mb-2">Wybór Kategorii</h2>
-                <p class="text-slate-500 mb-6">Wybierz kategorie fiszek do tego quizu.</p>
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Konfiguracja Quizu</h2>
+                <p class="text-slate-500 mb-6">Wybierz kategorie oraz liczbę pytań na tę sesję.</p>
 
-                <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
-                    <span class="font-bold text-slate-700">Dostępne kategorie:</span>
-                    <button onclick="selectAllCategories()" class="text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg font-semibold transition">Wybierz wszystkie</button>
+                <div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
+                    <span class="font-bold text-slate-700 text-sm">Dostępne kategorie:</span>
+                    <button onclick="selectAllCategories()" class="text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg font-semibold transition">Wybierz wszystkie</button>
                 </div>
 
-                <div id="quiz-categories-container" class="flex flex-col gap-3 text-left mb-8 max-h-64 overflow-y-auto pr-2">
+                <div id="quiz-categories-container" class="flex flex-col gap-2.5 text-left mb-7 max-h-56 overflow-y-auto pr-1">
+                </div>
+
+                <!-- WYBÓR LICZBY PYTAŃ -->
+                <div class="border-t border-slate-100 pt-5 mb-8 text-left">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="font-bold text-slate-700 text-sm">Liczba pytań w sesji:</span>
+                        <span id="available-questions-badge" class="text-xs font-bold bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg border border-slate-200">
+                            Max dostępnych: 0
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-3">
+                        <button type="button" id="q-btn-10" onclick="selectQuestionCount('10')" class="q-count-btn py-2.5 px-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-sm transition">10</button>
+                        <button type="button" id="q-btn-15" onclick="selectQuestionCount('15')" class="q-count-btn py-2.5 px-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-sm transition">15</button>
+                        <button type="button" id="q-btn-20" onclick="selectQuestionCount('20')" class="q-count-btn py-2.5 px-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-sm transition">20</button>
+                        <button type="button" id="q-btn-25" onclick="selectQuestionCount('25')" class="q-count-btn py-2.5 px-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-sm transition">25</button>
+                        <button type="button" id="q-btn-40" onclick="selectQuestionCount('40')" class="q-count-btn py-2.5 px-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-sm transition">40</button>
+                        <button type="button" id="q-btn-all" onclick="selectQuestionCount('all')" class="q-count-btn count-btn-active py-2.5 px-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-sm transition">Wszystkie</button>
+                        <button type="button" id="q-btn-custom" onclick="selectQuestionCount('custom')" class="q-count-btn col-span-3 sm:col-span-2 py-2.5 px-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-sm transition">✏️ Do wyboru</button>
+                    </div>
+
+                    <div id="custom-count-wrapper" class="hidden mt-3 bg-blue-50/70 border border-blue-200 p-3.5 rounded-xl flex items-center justify-between gap-3">
+                        <label for="custom-question-count" class="text-xs font-bold text-blue-900">
+                            Wpisz liczbę <span id="custom-max-hint" class="text-blue-600">(Max: 0)</span>:
+                        </label>
+                        <input type="number" id="custom-question-count" min="1" value="10" class="w-24 text-center px-3 py-1.5 rounded-lg border border-blue-300 font-bold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
                 </div>
 
                 <button onclick="executeQuizStart()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-xl shadow-lg shadow-blue-200 transition transform hover:-translate-y-0.5 text-lg">
@@ -481,7 +514,7 @@
                         </div>
 
                         <div id="field-full-theory-hint" class="hidden text-center py-4 text-slate-500 bg-slate-50 rounded-2xl border border-slate-200 text-sm">
-                            Przypomnij sobie w pamięci pełne dane tego gatunku (postać inwazyjna, diagnostyczna, wrota, bytowanie, objawy itp.), a następnie kliknij <strong>Sprawdź / Odkryj Karta</strong>.
+                            Przypomnij sobie w pamięci pełne dane tego gatunku (postać inwazyjna, diagnostyczna, wrota, bytowanie, objawy itp.), a następnie kliknij <strong>Sprawdź / Odkryj Kartę</strong>.
                         </div>
                         
                         <button onclick="checkAnswer()" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-200 transition text-lg tracking-wide">
@@ -715,6 +748,9 @@
         let quizMainMode = 'classic'; // 'classic', 'text', 'theory'
         let quizTextSubmode = 'lat_pl';
         let quizTheorySubmode = 'single'; // 'single', 'full'
+        let selectedQuestionLimit = 'all'; // '10', '15', '20', '25', '40', 'all', 'custom'
+        let currentMaxAvailableQuestions = 0;
+
         let currentPool = [];
         let douczanieSet = new Set(); 
         let currentItem = null;
@@ -1158,56 +1194,8 @@
             }
         }
 
-        function renderCategorySetup() {
-            const container = document.getElementById('quiz-categories-container');
-            container.innerHTML = '';
-            
-            categories.forEach(cat => {
-                let validCards = db.filter(c => c.category === cat);
-                if (quizMainMode === 'text') {
-                    validCards = validCards.filter(c => c.latinName && c.latinName.trim() !== '' && c.polishName && c.polishName.trim() !== '');
-                } else if (quizMainMode === 'theory') {
-                    validCards = validCards.filter(c => c.invasiveForm || c.diagnosticForm || c.entryPortal || c.reproductionSite || c.diseaseName || c.detectionMethods || c.symptoms || c.importantNotes);
-                }
-                const count = validCards.length;
-                
-                const label = document.createElement('label');
-                label.className = "flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer hover:bg-slate-100 transition";
-                
-                const checkbox = document.createElement('input');
-                checkbox.type = "checkbox";
-                checkbox.value = cat;
-                checkbox.className = "quiz-cat-checkbox w-5 h-5 text-blue-600 rounded focus:ring-blue-500 cursor-pointer";
-                if(count > 0) checkbox.checked = true;
-                else checkbox.disabled = true;
-
-                const textDiv = document.createElement('div');
-                textDiv.className = "flex-1 flex justify-between";
-                textDiv.innerHTML = `
-                    <span class="font-semibold text-slate-700 ${count === 0 ? 'opacity-50' : ''}">${cat}</span>
-                    <span class="text-sm font-bold ${count === 0 ? 'text-slate-400' : 'text-blue-600 bg-blue-100 px-2 py-0.5 rounded-lg'}">${count} fiszek</span>
-                `;
-                
-                label.appendChild(checkbox);
-                label.appendChild(textDiv);
-                container.appendChild(label);
-            });
-        }
-
-        function selectAllCategories() {
-            const checkboxes = document.querySelectorAll('.quiz-cat-checkbox:not(:disabled)');
-            checkboxes.forEach(cb => cb.checked = true);
-        }
-
-        /* LOGIKA PUDOWANIA DANYCH DO QUIZU */
-        function executeQuizStart() {
-            const selectedCats = Array.from(document.querySelectorAll('.quiz-cat-checkbox:checked')).map(cb => cb.value);
-            
-            if (selectedCats.length === 0) {
-                showMessage("Wybierz przynajmniej jedną kategorię!");
-                return;
-            }
-
+        /* OBLICZANIE DOSTĘPNEJ PULI PYTAŃ DLA WYBRANYCH KATEGORII */
+        function buildQuestionPoolForCategories(selectedCats) {
             const rawPool = [];
             
             if (quizMainMode === 'classic') {
@@ -1270,14 +1258,138 @@
                     });
                 }
             }
+            return rawPool;
+        }
+
+        function renderCategorySetup() {
+            const container = document.getElementById('quiz-categories-container');
+            container.innerHTML = '';
+            
+            categories.forEach(cat => {
+                const validPool = buildQuestionPoolForCategories([cat]);
+                const count = validPool.length;
+                
+                const label = document.createElement('label');
+                label.className = "flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer hover:bg-slate-100 transition";
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = "checkbox";
+                checkbox.value = cat;
+                checkbox.className = "quiz-cat-checkbox w-5 h-5 text-blue-600 rounded focus:ring-blue-500 cursor-pointer";
+                checkbox.onchange = updateAvailableQuestionsUI;
+                if(count > 0) checkbox.checked = true;
+                else checkbox.disabled = true;
+
+                const textDiv = document.createElement('div');
+                textDiv.className = "flex-1 flex justify-between";
+                textDiv.innerHTML = `
+                    <span class="font-semibold text-slate-700 ${count === 0 ? 'opacity-50' : ''}">${cat}</span>
+                    <span class="text-sm font-bold ${count === 0 ? 'text-slate-400' : 'text-blue-600 bg-blue-100 px-2 py-0.5 rounded-lg'}">${count} pytań</span>
+                `;
+                
+                label.appendChild(checkbox);
+                label.appendChild(textDiv);
+                container.appendChild(label);
+            });
+
+            selectQuestionCount('all');
+            updateAvailableQuestionsUI();
+        }
+
+        function updateAvailableQuestionsUI() {
+            const selectedCats = Array.from(document.querySelectorAll('.quiz-cat-checkbox:checked')).map(cb => cb.value);
+            const pool = buildQuestionPoolForCategories(selectedCats);
+            currentMaxAvailableQuestions = pool.length;
+
+            document.getElementById('available-questions-badge').textContent = `Max dostępnych: ${currentMaxAvailableQuestions}`;
+            document.getElementById('custom-max-hint').textContent = `(Max: ${currentMaxAvailableQuestions})`;
+            
+            const customInput = document.getElementById('custom-question-count');
+            customInput.max = currentMaxAvailableQuestions;
+            if (parseInt(customInput.value) > currentMaxAvailableQuestions && currentMaxAvailableQuestions > 0) {
+                customInput.value = currentMaxAvailableQuestions;
+            }
+
+            const presets = [10, 15, 20, 25, 40];
+            presets.forEach(num => {
+                const btn = document.getElementById(`q-btn-${num}`);
+                if (!btn) return;
+                if (currentMaxAvailableQuestions < num) {
+                    btn.disabled = true;
+                    btn.classList.add('opacity-40', 'cursor-not-allowed');
+                    if (selectedQuestionLimit === String(num)) {
+                        selectQuestionCount('all');
+                    }
+                } else {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-40', 'cursor-not-allowed');
+                }
+            });
+        }
+
+        function selectQuestionCount(limitMode) {
+            selectedQuestionLimit = limitMode;
+            
+            document.querySelectorAll('.q-count-btn').forEach(b => b.classList.remove('count-btn-active'));
+            const activeBtn = document.getElementById(`q-btn-${limitMode}`);
+            if (activeBtn) activeBtn.classList.add('count-btn-active');
+
+            const customWrapper = document.getElementById('custom-count-wrapper');
+            if (limitMode === 'custom') {
+                customWrapper.classList.remove('hidden');
+                const customInput = document.getElementById('custom-question-count');
+                if (currentMaxAvailableQuestions > 0 && parseInt(customInput.value) > currentMaxAvailableQuestions) {
+                    customInput.value = currentMaxAvailableQuestions;
+                }
+                setTimeout(() => customInput.focus(), 50);
+            } else {
+                customWrapper.classList.add('hidden');
+            }
+        }
+
+        function selectAllCategories() {
+            const checkboxes = document.querySelectorAll('.quiz-cat-checkbox:not(:disabled)');
+            checkboxes.forEach(cb => cb.checked = true);
+            updateAvailableQuestionsUI();
+        }
+
+        /* BUDOWANIE DANYCH DO QUIZU Z LIMITAMI */
+        function executeQuizStart() {
+            const selectedCats = Array.from(document.querySelectorAll('.quiz-cat-checkbox:checked')).map(cb => cb.value);
+            
+            if (selectedCats.length === 0) {
+                showMessage("Wybierz przynajmniej jedną kategorię!");
+                return;
+            }
+
+            const rawPool = buildQuestionPoolForCategories(selectedCats);
 
             if (rawPool.length === 0) {
                 showMessage("Brak odpowiednich danych w wybranych kategoriach.");
                 return;
             }
 
-            currentPool = rawPool;
-            shuffleArray(currentPool);
+            shuffleArray(rawPool);
+
+            let finalLimit = rawPool.length;
+            if (selectedQuestionLimit === 'custom') {
+                const customVal = parseInt(document.getElementById('custom-question-count').value);
+                if (isNaN(customVal) || customVal < 1) {
+                    showMessage("Wpisz poprawną liczbę pytań (minimum 1).");
+                    return;
+                }
+                if (customVal > rawPool.length) {
+                    finalLimit = rawPool.length;
+                    showMessage(`Dostosowano do maksymalnej liczby (${finalLimit}).`);
+                } else {
+                    finalLimit = customVal;
+                }
+            } else if (selectedQuestionLimit !== 'all') {
+                const numLimit = parseInt(selectedQuestionLimit);
+                finalLimit = Math.min(numLimit, rawPool.length);
+            }
+
+            currentPool = rawPool.slice(0, finalLimit);
             
             douczanieSet.clear();
             score = 0;
@@ -1607,7 +1719,7 @@
             const exportData = {
                 categories: catsToExport,
                 cards: dbToExport,
-                version: 5
+                version: 6
             };
 
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData));
@@ -1716,7 +1828,6 @@
             const singleCont = document.getElementById('field-single-container');
             const fullHint = document.getElementById('field-full-theory-hint');
 
-            // Resety kontenerów
             latinCont.classList.add('hidden');
             polishCont.classList.add('hidden');
             formCont.classList.add('hidden');
@@ -1827,6 +1938,8 @@
                 evalPolish.classList.remove('hidden');
                 evalForm.classList.remove('hidden');
 
+                document.querySelector('#eval-latin-block p').textContent = "Nazwa łacińska";
+
                 const uLatin = document.getElementById('guess-latin').value.trim();
                 const uPolish = document.getElementById('guess-polish').value.trim();
                 const uForm = document.getElementById('guess-form').value.trim();
@@ -1838,6 +1951,8 @@
                 stdBox.classList.remove('hidden');
                 fullBox.classList.add('hidden');
                 evalForm.classList.add('hidden');
+
+                document.querySelector('#eval-latin-block p').textContent = "Nazwa łacińska";
 
                 const uSingle = document.getElementById('guess-single').value.trim();
 
