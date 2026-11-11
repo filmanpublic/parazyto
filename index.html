@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ParaFiszki - OlyVIA Alternative</title>
     
-    <!-- Konfiguracja PWA i Ikony -->
     <link rel="manifest" href="./manifest.json">
     <link rel="icon" type="image/png" href="./icon.png">
     <link rel="apple-touch-icon" href="./icon.png">
@@ -21,7 +20,6 @@
             background-color: #f8fafc;
             color: #0f172a;
         }
-        /* Modal do powiększania zdjęć */
         .zoom-modal {
             display: none;
             position: fixed;
@@ -46,7 +44,6 @@
             object-fit: contain;
             border-radius: 8px;
         }
-        /* Płynne przejścia widoków */
         .view-section {
             display: none;
             animation: fadeIn 0.4s ease-in-out;
@@ -58,12 +55,10 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        /* Kolorowanie literówek */
         .input-correct { color: #16a34a; font-weight: bold; }
         .input-wrong { color: #ef4444; font-weight: bold; text-decoration: underline; }
         .input-missing { color: #9ca3af; font-weight: bold; text-decoration: underline; }
         
-        /* Toast notification */
         #toast {
             transition: opacity 0.3s ease, transform 0.3s ease;
         }
@@ -75,18 +70,16 @@
 </head>
 <body class="min-h-screen flex flex-col relative">
 
-    <!-- Rejestracja Service Workera -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Service Worker zarejestrowany pomyślnie:', reg.scope))
-                    .catch(err => console.error('Błąd rejestracji Service Workera:', err));
+                    .then(reg => console.log('Service Worker zarejestrowany:', reg.scope))
+                    .catch(err => console.error('Błąd Service Workera:', err));
             });
         }
     </script>
 
-    <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-6 right-6 bg-slate-800 text-white px-6 py-3 rounded-xl shadow-2xl opacity-0 pointer-events-none transform translate-y-4 z-50 font-medium">
         Wiadomość systemowa
     </div>
@@ -108,7 +101,7 @@
     <div id="categoryModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-[60] flex justify-center items-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 transform scale-95 transition-transform duration-200" id="category-box">
             <h3 class="text-xl font-bold mb-4 text-slate-800">Nowa kategoria</h3>
-            <input type="text" id="new-category-input" placeholder="Wpisz nazwę (np. Hydrosfera)" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-blue-100 outline-none transition text-slate-800 font-medium mb-6">
+            <input type="text" id="new-category-input" placeholder="Wpisz nazwę" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-blue-100 outline-none transition text-slate-800 font-medium mb-6">
             <div class="flex gap-3 justify-end">
                 <button onclick="closeCategoryModal()" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition">Anuluj</button>
                 <button onclick="saveNewCategory()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition shadow-md">Dodaj</button>
@@ -116,13 +109,12 @@
         </div>
     </div>
 
-    <!-- Navbar / Header -->
+    <!-- Header -->
     <header class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-40">
         <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
             <h1 class="text-xl font-bold text-blue-600 flex items-center gap-2 cursor-pointer hover:opacity-80 transition" onclick="showView('menu-view')">
                 🦠 ParaFiszki
             </h1>
-            <!-- Dyskretne statystyki (widoczne tylko podczas quizu) -->
             <div id="quiz-stats" class="hidden text-sm font-semibold bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
                 <span class="text-green-600">Punkty: <span id="stat-score">0</span></span><span class="mx-2 text-slate-300">|</span> 
                 <span class="text-blue-600">W puli: <span id="stat-remaining">0</span></span>
@@ -139,20 +131,24 @@
                 <p class="text-slate-500 mt-2">Ucz się skutecznie, weryfikuj literówki i zapamiętuj wizualnie.</p>
             </div>
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
-                <button onclick="startQuizFlow()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-5 px-6 rounded-2xl shadow-lg shadow-blue-200 transition transform hover:-translate-y-1 flex flex-col items-center justify-center">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 max-w-5xl mx-auto">
+                <button onclick="startQuizFlow()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-5 px-4 rounded-2xl shadow-lg shadow-blue-200 transition transform hover:-translate-y-1 flex flex-col items-center justify-center">
                     <span class="text-3xl mb-2">🎓</span> 
                     <span>Rozpocznij Quiz</span>
                 </button>
-                <button onclick="showView('add-card-view')" class="bg-white border-2 border-slate-200 hover:border-blue-400 hover:bg-blue-50 text-slate-700 font-semibold py-5 px-6 rounded-2xl shadow-sm transition transform hover:-translate-y-1 flex flex-col items-center justify-center">
-                    <span class="text-3xl mb-2">➕</span> 
-                    <span>Dodaj nową fiszkę</span>
+                <button onclick="showStudyView()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-5 px-4 rounded-2xl shadow-lg shadow-emerald-200 transition transform hover:-translate-y-1 flex flex-col items-center justify-center">
+                    <span class="text-3xl mb-2">📖</span> 
+                    <span>Ucz się (Baza)</span>
                 </button>
-                <button onclick="showEditView()" class="bg-white border-2 border-slate-200 hover:border-orange-400 hover:bg-orange-50 text-slate-700 font-semibold py-5 px-6 rounded-2xl shadow-sm transition transform hover:-translate-y-1 flex flex-col items-center justify-center">
+                <button onclick="showView('add-card-view')" class="bg-white border-2 border-slate-200 hover:border-blue-400 hover:bg-blue-50 text-slate-700 font-semibold py-5 px-4 rounded-2xl shadow-sm transition transform hover:-translate-y-1 flex flex-col items-center justify-center">
+                    <span class="text-3xl mb-2">➕</span> 
+                    <span>Dodaj fiszkę</span>
+                </button>
+                <button onclick="showEditView()" class="bg-white border-2 border-slate-200 hover:border-orange-400 hover:bg-orange-50 text-slate-700 font-semibold py-5 px-4 rounded-2xl shadow-sm transition transform hover:-translate-y-1 flex flex-col items-center justify-center">
                     <span class="text-3xl mb-2">✏️</span> 
                     <span>Edytuj bazę</span>
                 </button>
-                <button onclick="showCategoriesView()" class="bg-white border-2 border-slate-200 hover:border-purple-400 hover:bg-purple-50 text-slate-700 font-semibold py-5 px-6 rounded-2xl shadow-sm transition transform hover:-translate-y-1 flex flex-col items-center justify-center">
+                <button onclick="showCategoriesView()" class="bg-white border-2 border-slate-200 hover:border-purple-400 hover:bg-purple-50 text-slate-700 font-semibold py-5 px-4 rounded-2xl shadow-sm transition transform hover:-translate-y-1 flex flex-col items-center justify-center">
                     <span class="text-3xl mb-2">📁</span> 
                     <span>Kategorie</span>
                 </button>
@@ -162,7 +158,7 @@
                 <h3 class="text-lg font-bold text-slate-800 mb-2">Zarządzanie bazą danych</h3>
                 <p class="text-sm text-slate-500 mb-5">Użyj eksportu/importu, aby przenosić pytania między urządzeniami. <br>Baza zawiera aktualnie <strong id="db-count" class="text-blue-600 text-base">0</strong> fiszek.</p>
                 
-                <div class="mb-4">
+                <div class="mb-4 text-left">
                     <label class="block text-sm font-bold text-slate-700 mb-1.5">Wybierz zakres eksportu:</label>
                     <select id="export-category-select" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-4 focus:ring-blue-100 outline-none transition text-slate-800 font-medium">
                         <option value="ALL">Cała baza (Wszystkie kategorie)</option>
@@ -181,6 +177,45 @@
             </div>
         </div>
 
+        <!-- WIDOK: UCZ SIĘ (BAZA WIEDZY) -->
+        <div id="study-view" class="view-section w-full max-w-5xl">
+            <button onclick="showView('menu-view')" class="mb-4 text-slate-500 hover:text-slate-800 font-medium flex items-center gap-2 transition">
+                <span>←</span> Wróć do menu
+            </button>
+            <div class="bg-white rounded-3xl shadow-xl border border-slate-100 p-6 sm:p-8">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 pb-4 border-b border-slate-100 gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">📖 Baza Wiedzy Pasożytów</h2>
+                        <p class="text-sm text-slate-500 mt-1">Przeglądaj automatycznie pogrupowane gatunki i ich formy.</p>
+                    </div>
+                    <span class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-sm font-bold" id="study-species-count">0 gatunków</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wider">Szukaj gatunku / formy</label>
+                        <input type="text" id="study-search" placeholder="np. Ascaris, cysta..." oninput="renderStudyView()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wider">Kategoria</label>
+                        <select id="study-category-filter" onchange="renderStudyView()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white">
+                            <option value="ALL">Wszystkie kategorie</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wider">Sortowanie</label>
+                        <select id="study-sort" onchange="renderStudyView()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white">
+                            <option value="latin">Łacina (A - Z)</option>
+                            <option value="polish">Polska (A - Z)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="study-species-list" class="flex flex-col gap-6">
+                </div>
+            </div>
+        </div>
+
         <!-- WIDOK 2: DODAWANIE FISZKI -->
         <div id="add-card-view" class="view-section w-full max-w-xl">
             <button onclick="showView('menu-view')" class="mb-4 text-slate-500 hover:text-slate-800 font-medium flex items-center gap-2 transition">
@@ -189,7 +224,6 @@
             <div class="bg-white rounded-3xl shadow-xl border border-slate-100 p-6 sm:p-8">
                 <h2 class="text-2xl font-bold text-slate-800 mb-6">Dodaj nowy preparat</h2>
                 
-                <!-- Zdjęcie -->
                 <div class="mb-6">
                     <label class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">Zdjęcie preparatu</label>
                     <div class="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center hover:bg-slate-50 transition cursor-pointer flex flex-col items-center justify-center min-h-[120px]" onclick="document.getElementById('image-upload').click()">
@@ -199,29 +233,28 @@
                     </div>
                 </div>
 
-                <!-- 3 Pola Tekstowe -->
                 <div class="space-y-4 mb-8">
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-1.5">Kategoria</label>
                         <div class="flex gap-2">
                             <select id="category-input" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition text-slate-800 font-medium bg-white">
                             </select>
-                            <button onclick="openCategoryModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 rounded-xl font-bold transition whitespace-nowrap" title="Nowa kategoria">
+                            <button onclick="openCategoryModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 rounded-xl font-bold transition whitespace-nowrap">
                                 + Nowa
                             </button>
                         </div>
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-1.5">Nazwa łacińska</label>
-                        <input type="text" id="latin-input" placeholder="np. Ascaris lumbricoides" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition text-slate-800 font-medium">
+                        <input type="text" id="latin-input" placeholder="np. Ascaris lumbricoides" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-blue-100 outline-none transition text-slate-800 font-medium">
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-1.5">Nazwa polska (opcjonalnie)</label>
-                        <input type="text" id="polish-input" placeholder="np. Glista ludzka" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition text-slate-800 font-medium">
+                        <input type="text" id="polish-input" placeholder="np. Glista ludzka" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-blue-100 outline-none transition text-slate-800 font-medium">
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-1.5">Forma na zdjęciu</label>
-                        <input type="text" id="form-input" placeholder="np. Jajo, Cysta, Postać dorosła" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition text-slate-800 font-medium">
+                        <input type="text" id="form-input" placeholder="np. Jajo, Cysta, Postać dorosła" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-blue-100 outline-none transition text-slate-800 font-medium">
                     </div>
                 </div>
 
@@ -231,7 +264,7 @@
             </div>
         </div>
 
-        <!-- WIDOK 2.5: KONFIGURACJA QUIZU (ETAP 1 - WYBÓR TRYBU GŁÓWNEGO) -->
+        <!-- WIDOK: WYBÓR TRYBU QUIZU -->
         <div id="quiz-mode-view" class="view-section w-full max-w-xl text-center">
             <button onclick="showView('menu-view')" class="mb-4 text-slate-500 hover:text-slate-800 font-medium flex items-center justify-center gap-2 transition mx-auto">
                 <span>←</span> Wróć do menu
@@ -260,7 +293,7 @@
             </div>
         </div>
 
-        <!-- WIDOK 2.6: KONFIGURACJA QUIZU (ETAP 2 - WYBÓR KIERUNKU TEKSTOWEGO) -->
+        <!-- WIDOK: KIERUNIK TEKSTOWY -->
         <div id="quiz-text-submode-view" class="view-section w-full max-w-xl text-center">
             <button onclick="showView('quiz-mode-view')" class="mb-4 text-slate-500 hover:text-slate-800 font-medium flex items-center justify-center gap-2 transition mx-auto">
                 <span>←</span> Wróć do wyboru trybu
@@ -288,7 +321,7 @@
             </div>
         </div>
 
-        <!-- WIDOK 2.7: KONFIGURACJA QUIZU (ETAP 3 - WYBÓR KATEGORII) -->
+        <!-- WIDOK: WYBÓR KATEGORII DO QUIZU -->
         <div id="quiz-setup-view" class="view-section w-full max-w-xl text-center">
             <button onclick="goBackFromCategorySetup()" class="mb-4 text-slate-500 hover:text-slate-800 font-medium flex items-center justify-center gap-2 transition mx-auto">
                 <span>←</span> Wróć
@@ -311,11 +344,10 @@
             </div>
         </div>
 
-        <!-- WIDOK 3: QUIZ -->
+        <!-- WIDOK: EKRAN QUIZU -->
         <div id="quiz-view" class="view-section w-full max-w-2xl">
             <div class="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden flex flex-col">
                 
-                <!-- KARTA KLASYCZNA: ZDJĘCIE -->
                 <div id="quiz-image-container" class="relative bg-black w-full h-64 sm:h-96 flex justify-center items-center group cursor-zoom-in" onclick="openZoomModal()">
                     <img id="quiz-image" src="" alt="Preparat" class="max-w-full max-h-full object-contain">
                     <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition flex items-center justify-center">
@@ -325,17 +357,13 @@
                     </div>
                 </div>
 
-                <!-- KARTA TEKSTOWA: CZYSTY TEKST PYTANIA -->
                 <div id="quiz-text-card" class="hidden bg-slate-900 text-white w-full py-12 px-6 flex flex-col items-center justify-center text-center shadow-inner">
                     <span id="quiz-text-label" class="text-xs uppercase font-bold tracking-widest text-blue-400 mb-2">Pytanie</span>
                     <h3 id="quiz-text-prompt" class="text-3xl sm:text-4xl font-extrabold tracking-wide leading-tight break-words max-w-xl">...</h3>
                 </div>
                 
-                <!-- Strefa odpowiedzi -->
                 <div class="p-6 sm:p-8 flex flex-col">
                     <div id="input-zone" class="flex flex-col gap-4 mb-2">
-                        
-                        <!-- Pola trybu klasycznego -->
                         <div id="field-latin-container">
                             <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider text-center">Nazwa łacińska</label>
                             <input type="text" id="guess-latin" autocomplete="off" placeholder="..." class="w-full text-center text-xl font-bold px-4 py-3 rounded-xl border-2 border-slate-200 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition" onkeypress="if(event.key === 'Enter') handleEnterKey('latin')">
@@ -349,7 +377,6 @@
                             <input type="text" id="guess-form" autocomplete="off" placeholder="..." class="w-full text-center text-xl font-bold px-4 py-3 rounded-xl border-2 border-slate-200 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition" onkeypress="if(event.key === 'Enter') checkAnswer()">
                         </div>
 
-                        <!-- Pojedyncze pole dla trybu tekstowego -->
                         <div id="field-single-container" class="hidden">
                             <label id="single-field-label" class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider text-center">Twoja odpowiedź</label>
                             <input type="text" id="guess-single" autocomplete="off" placeholder="..." class="w-full text-center text-xl font-bold px-4 py-3 rounded-xl border-2 border-slate-200 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition" onkeypress="if(event.key === 'Enter') checkAnswer()">
@@ -360,25 +387,20 @@
                         </button>
                     </div>
 
-                    <!-- Strefa ewaluacji (po sprawdzeniu) -->
                     <div id="evaluation-zone" class="hidden flex-col items-center w-full">
                         <div class="mb-6 w-full bg-slate-50 rounded-2xl p-5 border border-slate-200 flex flex-col gap-5 text-center shadow-inner">
-                            
-                            <!-- Latin -->
                             <div id="eval-latin-block" class="border-b border-slate-200 pb-4">
                                 <p class="text-[10px] text-slate-500 uppercase font-bold mb-1 tracking-widest">Nazwa łacińska</p>
                                 <div id="diff-latin" class="text-lg font-medium tracking-wide mb-1 leading-tight break-words"></div>
                                 <div id="correct-latin" class="text-xl font-bold text-blue-700 break-words"></div>
                             </div>
                             
-                            <!-- Polish -->
                             <div id="eval-polish-block" class="border-b border-slate-200 pb-4">
                                 <p class="text-[10px] text-slate-500 uppercase font-bold mb-1 tracking-widest">Nazwa polska</p>
                                 <div id="diff-polish" class="text-lg font-medium tracking-wide mb-1 leading-tight break-words"></div>
                                 <div id="correct-polish" class="text-xl font-bold text-blue-700 break-words"></div>
                             </div>
 
-                            <!-- Form -->
                             <div id="eval-form-block">
                                 <p class="text-[10px] text-slate-500 uppercase font-bold mb-1 tracking-widest">Forma na zdjęciu</p>
                                 <div id="diff-form" class="text-lg font-medium tracking-wide mb-1 leading-tight break-words"></div>
@@ -410,7 +432,7 @@
             </div>
         </div>
 
-        <!-- WIDOK 4: DOUCZANIE (EKRAN KOŃCOWY) -->
+        <!-- WIDOK: EKRAN KOŃCOWY -->
         <div id="douczanie-view" class="view-section w-full">
             <div class="text-center mb-8 bg-white py-8 rounded-3xl shadow-sm border border-slate-100">
                 <h2 class="text-4xl font-extrabold text-slate-800 mb-3">🎉 Quiz Zakończony!</h2>
@@ -434,7 +456,7 @@
             </div>
         </div>
 
-        <!-- WIDOK 5: EDYCJA BAZY -->
+        <!-- WIDOK: EDYCJA BAZY -->
         <div id="edit-db-view" class="view-section w-full max-w-5xl">
             <button onclick="showView('menu-view')" class="mb-4 text-slate-500 hover:text-slate-800 font-medium flex items-center gap-2 transition">
                 <span>←</span> Wróć do menu
@@ -450,7 +472,7 @@
             </div>
         </div>
 
-        <!-- WIDOK 6: ZARZĄDZANIE KATEGORIAMI -->
+        <!-- WIDOK: KATEGORIE -->
         <div id="categories-view" class="view-section w-full max-w-3xl">
             <button onclick="showView('menu-view')" class="mb-4 text-slate-500 hover:text-slate-800 font-medium flex items-center gap-2 transition">
                 <span>←</span> Wróć do menu
@@ -488,7 +510,6 @@
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-6 sm:p-8 max-h-[90vh] overflow-y-auto">
             <h3 class="text-2xl font-bold mb-6 text-slate-800 border-b pb-3 border-slate-100">Edytuj fiszkę</h3>
             
-            <!-- Zmiana zdjęcia -->
             <div class="mb-6">
                 <label class="block text-sm font-bold text-slate-700 mb-2">Zdjęcie (opcjonalnie zmień)</label>
                 <div class="border-2 border-dashed border-slate-300 rounded-2xl p-4 text-center hover:bg-slate-50 transition cursor-pointer" onclick="document.getElementById('edit-image-upload').click()">
@@ -498,14 +519,13 @@
                 </div>
             </div>
 
-            <!-- Pola -->
             <div class="space-y-4 mb-8">
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-1">Kategoria</label>
                     <div class="flex gap-2">
                         <select id="edit-category-input" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-4 focus:ring-blue-100 outline-none transition text-slate-800 font-medium bg-white">
                         </select>
-                        <button onclick="openCategoryModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 rounded-xl font-bold transition" title="Nowa kategoria">
+                        <button onclick="openCategoryModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 rounded-xl font-bold transition">
                             + Nowa
                         </button>
                     </div>
@@ -540,16 +560,22 @@
         <img id="zoomed-image" src="" alt="Zoom">
     </div>
 
-    <!-- SKRYPTY LOGIKI -->
+    <!-- SKRYPT LOGIKI -->
     <script>
-        /* SYSTEM POWIADOMIEŃ I OKIENEK */
+        let db = []; 
+        let categories = ["Ogólne"];
+        let quizMainMode = 'classic';
+        let quizTextSubmode = 'lat_pl';
+        let currentPool = [];
+        let douczanieSet = new Set(); 
+        let currentItem = null;
+        let score = 0;
+
         function showMessage(msg) {
             const toast = document.getElementById('toast');
             toast.textContent = msg;
             toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3500);
+            setTimeout(() => toast.classList.remove('show'), 3500);
         }
 
         let confirmCallback = null;
@@ -573,26 +599,27 @@
             }, 200);
         }
 
-        /* BAZA DANYCH I INICJALIZACJA */
-        let db = []; 
-        let categories = ["Ogólne"];
+        function openZoomModal() {
+            const currentSrc = document.getElementById('quiz-image').src;
+            if (currentSrc) {
+                document.getElementById('zoomed-image').src = currentSrc;
+                document.getElementById('zoomModal').classList.add('active');
+            }
+        }
         
-        // Stan Quizu
-        let quizMainMode = 'classic'; // 'classic' | 'text'
-        let quizTextSubmode = 'lat_pl'; // 'lat_pl' | 'pl_lat' | 'mix'
-        let currentPool = []; // obiekty pytania: { cardIndex, textDirection: 'lat_pl'|'pl_lat'|null }
-        let douczanieSet = new Set(); 
-        let currentItem = null;
-        let score = 0;
+        function openSpecificZoom(src) {
+            document.getElementById('zoomed-image').src = src;
+            document.getElementById('zoomModal').classList.add('active');
+        }
+
+        function closeZoomModal() {
+            document.getElementById('zoomModal').classList.remove('active');
+        }
 
         function initDB() {
             const savedCats = localStorage.getItem('parafiszki_cats');
             if (savedCats) {
-                try {
-                    categories = JSON.parse(savedCats);
-                } catch(e) {
-                    categories = ["Ogólne"];
-                }
+                try { categories = JSON.parse(savedCats); } catch(e) { categories = ["Ogólne"]; }
             }
 
             const saved = localStorage.getItem('parafiszki_db');
@@ -632,10 +659,12 @@
             }
             updateDbCount();
             updateCategoryDropdowns();
+            updateStudyCategoryDropdown();
         }
 
         function updateDbCount() {
-            document.getElementById('db-count').textContent = db.length;
+            const cnt = document.getElementById('db-count');
+            if(cnt) cnt.textContent = db.length;
             const badge = document.getElementById('edit-count-badge');
             if(badge) badge.textContent = `${db.length} fiszek`;
         }
@@ -648,14 +677,14 @@
                 if(showToast) showMessage("✅ Pomyślnie zapisano!");
             } catch (e) {
                 showMessage("❌ Brak miejsca! Pamięć urządzenia jest pełna.");
-                console.error("Błąd LocalStorage:", e);
             }
         }
 
-        /* ZARZĄDZANIE WIDOKAMI */
+        /* SPRAWDZONY SYSTEM WIDOKÓW ZE STAREJ WERSJI */
         function showView(viewId) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.getElementById(viewId).classList.add('active');
+            const target = document.getElementById(viewId);
+            if (target) target.classList.add('active');
             
             const stats = document.getElementById('quiz-stats');
             if(viewId === 'quiz-view') {
@@ -671,7 +700,154 @@
             }
         }
 
-        /* NAWIGACJA KONFIGURACJI QUIZU */
+        /* ----------------------------------------------------- */
+        /* MODUŁ: UCZ SIĘ (BAZA WIEDZY Z BEZPIECZNĄ PĘTLĄ)       */
+        /* ----------------------------------------------------- */
+        function updateStudyCategoryDropdown() {
+            const select = document.getElementById('study-category-filter');
+            if (!select) return;
+            const cur = select.value;
+            select.innerHTML = '<option value="ALL">Wszystkie kategorie</option>';
+            categories.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = cat;
+                select.appendChild(opt);
+            });
+            if (cur && (cur === 'ALL' || categories.includes(cur))) {
+                select.value = cur;
+            }
+        }
+
+        function renderStudyView() {
+            const container = document.getElementById('study-species-list');
+            if (!container) return;
+            
+            const searchInput = document.getElementById('study-search');
+            const searchVal = searchInput ? searchInput.value.trim().toLowerCase() : "";
+            const catFilterElem = document.getElementById('study-category-filter');
+            const catFilter = catFilterElem ? catFilterElem.value : 'ALL';
+            const sortElem = document.getElementById('study-sort');
+            const sortBy = sortElem ? sortElem.value : 'latin';
+
+            container.innerHTML = '';
+
+            if (!db || db.length === 0) {
+                container.innerHTML = '<div class="text-center py-12 text-slate-400 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">Baza fiszek jest pusta. Dodaj preparaty, aby mogły się automatycznie pogrupować.</div>';
+                const countElem = document.getElementById('study-species-count');
+                if(countElem) countElem.textContent = '0 gatunków';
+                return;
+            }
+
+            const speciesMap = {};
+
+            db.forEach(card => {
+                if (!card) return;
+                if (catFilter !== 'ALL' && card.category !== catFilter) return;
+
+                const latinKey = (card.latinName || "").trim();
+                const polishKey = (card.polishName || "").trim();
+                
+                let groupKey = latinKey.toLowerCase() || polishKey.toLowerCase() || 'nieokreslony';
+
+                if (!speciesMap[groupKey]) {
+                    speciesMap[groupKey] = {
+                        latinName: latinKey,
+                        polishName: polishKey,
+                        categories: new Set(),
+                        cards: []
+                    };
+                }
+
+                if (!speciesMap[groupKey].latinName && latinKey) speciesMap[groupKey].latinName = latinKey;
+                if (!speciesMap[groupKey].polishName && polishKey) speciesMap[groupKey].polishName = polishKey;
+                
+                if (card.category) speciesMap[groupKey].categories.add(card.category);
+                speciesMap[groupKey].cards.push(card);
+            });
+
+            let speciesArray = Object.values(speciesMap);
+
+            if (searchVal) {
+                speciesArray = speciesArray.filter(sp => {
+                    const matchLatin = (sp.latinName || "").toLowerCase().includes(searchVal);
+                    const matchPolish = (sp.polishName || "").toLowerCase().includes(searchVal);
+                    const matchForm = sp.cards.some(c => (c.form || "").toLowerCase().includes(searchVal));
+                    return matchLatin || matchPolish || matchForm;
+                });
+            }
+
+            speciesArray.sort((a, b) => {
+                if (sortBy === 'latin') {
+                    const nameA = a.latinName || a.polishName || "";
+                    const nameB = b.latinName || b.polishName || "";
+                    return nameA.localeCompare(nameB);
+                } else {
+                    const nameA = a.polishName || a.latinName || "";
+                    const nameB = b.polishName || b.latinName || "";
+                    return nameA.localeCompare(nameB);
+                }
+            });
+
+            const countElem = document.getElementById('study-species-count');
+            if(countElem) countElem.textContent = `${speciesArray.length} gatunków`;
+
+            if (speciesArray.length === 0) {
+                container.innerHTML = '<div class="text-center py-10 text-slate-400">Brak wyników spełniających kryteria wyszukiwania.</div>';
+                return;
+            }
+
+            speciesArray.forEach(sp => {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = "bg-white border-2 border-slate-100 rounded-3xl p-6 shadow-md hover:shadow-lg transition flex flex-col gap-4";
+
+                const catsBadges = Array.from(sp.categories).map(c => 
+                    `<span class="px-2.5 py-0.5 bg-slate-100 text-slate-600 text-xs font-bold rounded-lg border border-slate-200">${c}</span>`
+                ).join(' ');
+
+                const headerHtml = `
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-3 gap-2">
+                        <div>
+                            ${sp.latinName ? `<h3 class="text-2xl font-extrabold text-slate-800 tracking-tight leading-tight">${sp.latinName}</h3>` : ''}
+                            ${sp.polishName ? `<p class="text-base font-semibold text-emerald-600 mt-0.5">${sp.polishName}</p>` : ''}
+                        </div>
+                        <div class="flex items-center gap-2">
+                            ${catsBadges}
+                            <span class="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-lg border border-emerald-100">${sp.cards.length} ${sp.cards.length === 1 ? 'preparat' : 'preparaty'}</span>
+                        </div>
+                    </div>
+                `;
+
+                let itemsHtml = '<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-1">';
+                sp.cards.forEach(c => {
+                    const formLabel = c.form ? c.form : 'Preparat';
+                    itemsHtml += `
+                        <div class="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden flex flex-col">
+                            <div class="h-44 bg-black flex items-center justify-center cursor-zoom-in relative group" onclick="openSpecificZoom('${c.image}')">
+                                <img src="${c.image}" class="max-w-full max-h-full object-contain">
+                                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition flex items-center justify-center">
+                                    <span class="text-white opacity-0 group-hover:opacity-100 text-xs font-bold bg-black bg-opacity-70 px-3 py-1.5 rounded-lg backdrop-blur-sm">Powiększ 🔍</span>
+                                </div>
+                            </div>
+                            <div class="p-3 text-center bg-white border-t border-slate-100 flex-grow flex items-center justify-center">
+                                <span class="text-xs font-bold text-slate-700 uppercase tracking-wider bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">${formLabel}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                itemsHtml += '</div>';
+
+                cardDiv.innerHTML = headerHtml + itemsHtml;
+                container.appendChild(cardDiv);
+            });
+        }
+
+        function showStudyView() {
+            updateStudyCategoryDropdown();
+            renderStudyView();
+            showView('study-view');
+        }
+
         function startQuizFlow() {
             if (db.length === 0) {
                 showMessage("Baza jest pusta. Dodaj fiszki, aby rozpocząć.");
@@ -709,10 +885,8 @@
             container.innerHTML = '';
             
             categories.forEach(cat => {
-                // Oblicz ile fiszek w tej kategorii kwalifikuje się do wybranego trybu
                 let validCards = db.filter(c => c.category === cat);
                 if (quizMainMode === 'text') {
-                    // Dla trybu tekstowego fiszka MUSI posiadać zarówno łacińską, jak i polską nazwę
                     validCards = validCards.filter(c => c.latinName && c.latinName.trim() !== '' && c.polishName && c.polishName.trim() !== '');
                 }
                 const count = validCards.length;
@@ -749,7 +923,7 @@
             const selectedCats = Array.from(document.querySelectorAll('.quiz-cat-checkbox:checked')).map(cb => cb.value);
             
             if (selectedCats.length === 0) {
-                showMessage("Wybierz przynajmniej jedną kategorię z dostępnymi fiszkami!");
+                showMessage("Wybierz przynajmniej jedną kategorię!");
                 return;
             }
 
@@ -759,7 +933,6 @@
                     if (quizMainMode === 'classic') {
                         rawPool.push({ cardIndex: index, textDirection: null });
                     } else {
-                        // Dla trybu tekstowego sprawdzamy czy są obie nazwy
                         if (card.latinName && card.latinName.trim() !== '' && card.polishName && card.polishName.trim() !== '') {
                             let direction = quizTextSubmode;
                             if (quizTextSubmode === 'mix') {
@@ -786,7 +959,6 @@
             loadNextCard();
         }
 
-        /* ZARZĄDZANIE KATEGORIAMI W BAZIE */
         function openCategoryModal() {
             const modal = document.getElementById('categoryModal');
             const box = document.getElementById('category-box');
@@ -873,14 +1045,8 @@
             const oldName = document.getElementById('edit-cat-old-name').value;
             const newName = document.getElementById('edit-cat-input').value.trim();
             
-            if (!newName) {
-                showMessage("Wpisz nazwę kategorii.");
-                return;
-            }
-            if (newName !== oldName && categories.includes(newName)) {
-                showMessage("Taka kategoria już istnieje.");
-                return;
-            }
+            if (!newName) { showMessage("Wpisz nazwę kategorii."); return; }
+            if (newName !== oldName && categories.includes(newName)) { showMessage("Taka kategoria już istnieje."); return; }
             
             if (newName !== oldName) {
                 const index = categories.indexOf(oldName);
@@ -892,6 +1058,7 @@
                 
                 saveToLocalStorage(false);
                 updateCategoryDropdowns();
+                updateStudyCategoryDropdown();
                 renderCategoriesView();
                 showMessage(`Zmieniono nazwę na: ${newName}`);
             }
@@ -911,6 +1078,7 @@
                 });
                 saveToLocalStorage(false);
                 updateCategoryDropdowns();
+                updateStudyCategoryDropdown();
                 renderCategoriesView();
                 showMessage(`Usunięto kategorię. Przeniesiono ${moved} fiszek do "Ogólne".`);
             });
@@ -918,17 +1086,12 @@
 
         function saveNewCategory() {
             const newCat = document.getElementById('new-category-input').value.trim();
-            if (!newCat) {
-                showMessage("Wpisz nazwę kategorii.");
-                return;
-            }
-            if (categories.includes(newCat)) {
-                showMessage("Taka kategoria już istnieje.");
-                return;
-            }
+            if (!newCat) { showMessage("Wpisz nazwę kategorii."); return; }
+            if (categories.includes(newCat)) { showMessage("Taka kategoria już istnieje."); return; }
             categories.push(newCat);
             saveToLocalStorage(false);
             updateCategoryDropdowns();
+            updateStudyCategoryDropdown();
             showMessage(`Dodano kategorię: ${newCat}`);
             closeCategoryModal();
             
@@ -974,7 +1137,6 @@
             });
         }
 
-        /* DODAWANIE FISZKI (KOMPRESJA I ZAPIS) */
         let tempBase64 = "";
 
         function compressImage(file, callback) {
@@ -1058,12 +1220,8 @@
             tempBase64 = "";
         }
 
-        /* IMPORT / EKSPORT (JSON) */
         function exportDB() {
-            if(db.length === 0) {
-                showMessage("Baza jest pusta, nie ma czego eksportować.");
-                return;
-            }
+            if(db.length === 0) { showMessage("Baza jest pusta."); return; }
             
             const exportCat = document.getElementById('export-category-select').value;
             let dbToExport = db;
@@ -1110,16 +1268,14 @@
                         importedCards = imported.cards;
                         importedCats = imported.categories || [];
                     } else {
-                        showMessage("❌ Nieznany format pliku JSON.");
+                        showMessage("❌ Nieznany format JSON.");
                         return;
                     }
                     
                     let addedCount = 0;
 
                     importedCats.forEach(cat => {
-                        if (!categories.includes(cat)) {
-                            categories.push(cat);
-                        }
+                        if (!categories.includes(cat)) categories.push(cat);
                     });
 
                     importedCards.forEach(card => {
@@ -1132,9 +1288,7 @@
                                 form: card.form || "",
                                 category: card.category || "Ogólne"
                             };
-                            if (!categories.includes(fixedCard.category)) {
-                                categories.push(fixedCard.category);
-                            }
+                            if (!categories.includes(fixedCard.category)) categories.push(fixedCard.category);
                             db.push(fixedCard);
                             addedCount++;
                         }
@@ -1142,17 +1296,16 @@
 
                     saveToLocalStorage();
                     updateCategoryDropdowns();
+                    updateStudyCategoryDropdown();
                     showMessage(`✅ Zaimportowano ${addedCount} nowych fiszek!`);
-                    
                 } catch (err) {
-                    showMessage("❌ Błąd podczas odczytu pliku. To nie jest poprawny JSON.");
+                    showMessage("❌ Błąd podczas odczytu pliku.");
                 }
                 event.target.value = "";
             };
             reader.readAsText(file);
         }
 
-        /* LOGIKA QUIZU I LITERÓWEK */
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -1167,16 +1320,11 @@
 
         function loadNextCard() {
             updateStats();
-            
-            if (currentPool.length === 0) {
-                finishQuiz();
-                return;
-            }
+            if (currentPool.length === 0) { finishQuiz(); return; }
 
             currentItem = currentPool[0]; 
             const card = db[currentItem.cardIndex];
 
-            // Czyszczenie pol tekstowych
             document.getElementById('guess-latin').value = '';
             document.getElementById('guess-polish').value = '';
             document.getElementById('guess-form').value = '';
@@ -1191,12 +1339,10 @@
             const singleCont = document.getElementById('field-single-container');
 
             if (quizMainMode === 'classic') {
-                // Pokaz zdjęcie
                 imgContainer.classList.remove('hidden');
                 textCard.classList.add('hidden');
                 document.getElementById('quiz-image').src = card.image;
 
-                // Pokaz 3 pola
                 latinCont.classList.remove('hidden');
                 polishCont.classList.remove('hidden');
                 formCont.classList.remove('hidden');
@@ -1204,7 +1350,6 @@
 
                 setTimeout(() => document.getElementById('guess-latin').focus(), 100);
             } else {
-                // Ukryj zdjęcie, pokaż czystą kartę tekstową
                 imgContainer.classList.add('hidden');
                 textCard.classList.remove('hidden');
 
@@ -1231,18 +1376,14 @@
             }
             
             document.getElementById('input-zone').classList.remove('hidden');
-            
             const evalZone = document.getElementById('evaluation-zone');
             evalZone.classList.add('hidden');
             evalZone.classList.remove('flex');
         }
 
         function handleEnterKey(currentField) {
-            if (currentField === 'latin') {
-                document.getElementById('guess-polish').focus();
-            } else if (currentField === 'polish') {
-                document.getElementById('guess-form').focus();
-            }
+            if (currentField === 'latin') document.getElementById('guess-polish').focus();
+            else if (currentField === 'polish') document.getElementById('guess-form').focus();
         }
 
         function checkAnswer() {
@@ -1283,12 +1424,12 @@
                 setEvalBlock('polish', uPolish, card.polishName);
                 setEvalBlock('form', uForm, card.form);
             } else {
-                evalForm.classList.add('hidden'); // Brak formy w trybie tekstowym
+                evalForm.classList.add('hidden');
 
                 const uSingle = document.getElementById('guess-single').value.trim();
 
                 if (currentItem.textDirection === 'lat_pl') {
-                    evalLatin.classList.add('hidden'); // Pytanie brzmiało o polską, więc pokazać tylko polską
+                    evalLatin.classList.add('hidden');
                     evalPolish.classList.remove('hidden');
                     setEvalBlock('polish', uSingle, card.polishName);
                 } else {
@@ -1325,7 +1466,6 @@
 
         function makeDecision(decisionType) {
             const cardId = db[currentItem.cardIndex].id;
-
             switch(decisionType) {
                 case 'dobra':
                     score++;
@@ -1346,7 +1486,6 @@
             loadNextCard();
         }
 
-        /* EKRAN KOŃCOWY - DOUCZANIE */
         function finishQuiz() {
             showView('douczanie-view');
             document.getElementById('final-score').textContent = score;
@@ -1359,13 +1498,13 @@
                 return;
             }
 
-            document.getElementById('douczanie-subtitle').textContent = `Przejrzyj poniższe ${douczanieSet.size} preparatów, z którymi miałeś problemy w tym quizie.`;
+            document.getElementById('douczanie-subtitle').textContent = `Przejrzyj poniższe ${douczanieSet.size} preparatów, z którymi miałeś problemy.`;
 
             Array.from(douczanieSet).forEach(id => {
                 const card = db.find(c => c.id === id);
                 if (card) {
                     const cardDiv = document.createElement('div');
-                    cardDiv.className = "bg-white border-2 border-slate-100 rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition flex flex-col";
+                    cardDiv.className = "bg-white border-2 border-slate-100 rounded-2xl overflow-hidden shadow-md flex flex-col";
                     cardDiv.innerHTML = `
                         <div class="h-48 bg-black flex items-center justify-center cursor-zoom-in relative group" onclick="openSpecificZoom('${card.image}')">
                             <img src="${card.image}" class="max-w-full max-h-full object-contain">
@@ -1384,7 +1523,6 @@
             });
         }
 
-        /* LOGIKA EDYCJI BAZY */
         function showEditView() {
             renderEditView();
             showView('edit-db-view');
@@ -1423,10 +1561,10 @@
                         <div>${dispCat}</div>
                     </div>
                     <div class="flex sm:flex-col gap-2 flex-shrink-0 w-full sm:w-auto justify-center">
-                        <button onclick="openEditModal(${card.id})" class="flex-1 sm:flex-none bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white px-4 py-2 sm:py-3 rounded-xl transition text-sm font-bold shadow-sm" title="Edytuj fiszkę">
+                        <button onclick="openEditModal(${card.id})" class="flex-1 sm:flex-none bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white px-4 py-2 sm:py-3 rounded-xl transition text-sm font-bold shadow-sm">
                             ✏️ Edytuj
                         </button>
-                        <button onclick="requestDeleteCard(${card.id})" class="flex-1 sm:flex-none bg-red-50 hover:bg-red-600 text-red-600 hover:text-white px-4 py-2 sm:py-3 rounded-xl transition text-sm font-bold shadow-sm" title="Usuń fiszkę">
+                        <button onclick="requestDeleteCard(${card.id})" class="flex-1 sm:flex-none bg-red-50 hover:bg-red-600 text-red-600 hover:text-white px-4 py-2 sm:py-3 rounded-xl transition text-sm font-bold shadow-sm">
                             🗑️ Usuń
                         </button>
                     </div>
@@ -1436,14 +1574,13 @@
         }
 
         function requestDeleteCard(id) {
-            customConfirm("Czy na pewno chcesz bezpowrotnie usunąć tę fiszkę z bazy?", () => {
+            customConfirm("Czy na pewno chcesz usunąć tę fiszkę?", () => {
                 db = db.filter(card => card.id !== id);
                 saveToLocalStorage(true);
                 renderEditView();
             });
         }
 
-        /* MODAL EDYCJI POJEDYNCZEJ FISZKI */
         let currentEditId = null;
         let tempEditBase64 = "";
 
@@ -1460,7 +1597,6 @@
             document.getElementById('edit-form-input').value = card.form || "";
             
             document.getElementById('edit-image-preview').src = card.image;
-            
             document.getElementById('editModal').classList.remove('hidden');
         }
 
@@ -1499,27 +1635,6 @@
                 renderEditView();
             }
             closeEditModal();
-        }
-
-        /* ZOOM MODAL DO ZDJĘĆ */
-        const zoomModal = document.getElementById('zoomModal');
-        const zoomedImg = document.getElementById('zoomed-image');
-
-        function openZoomModal() {
-            const currentSrc = document.getElementById('quiz-image').src;
-            if (currentSrc) {
-                zoomedImg.src = currentSrc;
-                zoomModal.classList.add('active');
-            }
-        }
-        
-        function openSpecificZoom(src) {
-            zoomedImg.src = src;
-            zoomModal.classList.add('active');
-        }
-
-        function closeZoomModal() {
-            zoomModal.classList.remove('active');
         }
 
         window.onload = initDB;
