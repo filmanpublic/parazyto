@@ -1,4 +1,4 @@
-const CACHE_NAME = 'parazyto-pwa-v16';
+const CACHE_NAME = 'parazyto-pwa-v17';
 const assetsToCache = [
   './',
   './index.html',
