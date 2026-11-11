@@ -1,8 +1,9 @@
-const CACHE_NAME = 'parazyto-pwa-v6';
+const CACHE_NAME = 'parazyto-pwa-v8'; // zmieniona wersja, by odświeżyć pamięć
 const assetsToCache = [
   './',
   './index.html',
-  './manifest.json'
+  './manifest.json',
+  './icon.png' // <-- nowa ikona do zapisu offline
 ];
 
 self.addEventListener('install', (event) => {
