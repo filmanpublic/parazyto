@@ -335,32 +335,40 @@
                 <p class="text-slate-500 mb-8">Zdecyduj, w jaki sposób chcesz przetestować swoją wiedzę.</p>
 
                 <div class="grid grid-cols-1 gap-4">
-                    <button onclick="selectMainMode('classic')" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition transform hover:-translate-y-1 flex items-center justify-between text-left">
+                    <button onclick="selectMainMode('classic')" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white p-5 rounded-2xl shadow-lg transition transform hover:-translate-y-1 flex items-center justify-between text-left">
                         <div>
-                            <span class="text-2xl font-bold block mb-1">🖼️ Tryb Klasyczny (ze zdjęciem)</span>
-                            <span class="text-blue-100 text-sm">Rozpoznawaj preparaty na podstawie zdjęć mikroskopowych.</span>
+                            <span class="text-xl font-bold block mb-1">🖼️ 1. Rozpoznawanie Mikroskopowe</span>
+                            <span class="text-blue-100 text-xs">Rozpoznawaj preparaty na podstawie zdjęć.</span>
                         </div>
-                        <span class="text-2xl ml-4">→</span>
+                        <span class="text-xl ml-4">→</span>
                     </button>
                     
-                    <button onclick="selectMainMode('text')" class="bg-white border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 text-slate-800 p-6 rounded-2xl shadow-sm transition transform hover:-translate-y-1 flex items-center justify-between text-left">
+                    <button onclick="selectMainMode('text')" class="bg-white border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 text-slate-800 p-5 rounded-2xl shadow-sm transition transform hover:-translate-y-1 flex items-center justify-between text-left">
                         <div>
-                            <span class="text-2xl font-bold block mb-1">📝 Tryb Tekstowy (Nazwy)</span>
-                            <span class="text-slate-500 text-sm">Ćwicz tłumaczenie i pisownię nazw polsko-łacińskich.</span>
+                            <span class="text-xl font-bold block mb-1">📝 2. Słowniczek Nazw (Tekstowy)</span>
+                            <span class="text-slate-500 text-xs">Ćwicz tłumaczenie i pisownię nazw polsko-łacińskich.</span>
                         </div>
-                        <span class="text-2xl ml-4 text-slate-400">→</span>
+                        <span class="text-xl ml-4 text-slate-400">→</span>
+                    </button>
+
+                    <button onclick="selectMainMode('theory')" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white p-5 rounded-2xl shadow-lg transition transform hover:-translate-y-1 flex items-center justify-between text-left">
+                        <div>
+                            <span class="text-xl font-bold block mb-1">🧬 3. Wiedza Parazytologiczna (Teoria)</span>
+                            <span class="text-emerald-100 text-xs">Wrota zakażenia, diagnostyka, objawy i kompendium.</span>
+                        </div>
+                        <span class="text-xl ml-4">→</span>
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- WIDOK: KIERUNIK TEKSTOWY -->
+        <!-- WIDOK: KIERUNEK TEKSTOWY (SŁOWNICZEK) -->
         <div id="quiz-text-submode-view" class="view-section w-full max-w-xl text-center">
             <button onclick="showView('quiz-mode-view')" class="mb-4 text-slate-500 hover:text-slate-800 font-medium flex items-center justify-center gap-2 transition mx-auto">
                 <span>←</span> Wróć do wyboru trybu
             </button>
             <div class="bg-white rounded-3xl shadow-xl border border-slate-100 p-6 sm:p-8">
-                <h2 class="text-2xl font-bold text-slate-800 mb-2">Kierunek Pytania</h2>
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Kierunek Pytania (Słowniczek)</h2>
                 <p class="text-slate-500 mb-8">Wybierz, jakie nazwy mają się wyświetlać jako pytania.</p>
 
                 <div class="grid grid-cols-1 gap-4">
@@ -376,6 +384,35 @@
 
                     <button onclick="selectTextSubmode('mix')" class="bg-white border-2 border-slate-200 hover:border-purple-500 hover:bg-purple-50 p-5 rounded-2xl shadow-sm transition text-left flex items-center justify-between">
                         <span class="font-bold text-lg text-slate-800">🔀 Mix (Losowy kierunek)</span>
+                        <span class="text-slate-400">→</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- WIDOK: PODTRYBY TEORII PARAZYTOLOGICZNEJ -->
+        <div id="quiz-theory-submode-view" class="view-section w-full max-w-xl text-center">
+            <button onclick="showView('quiz-mode-view')" class="mb-4 text-slate-500 hover:text-slate-800 font-medium flex items-center justify-center gap-2 transition mx-auto">
+                <span>←</span> Wróć do wyboru trybu
+            </button>
+            <div class="bg-white rounded-3xl shadow-xl border border-slate-100 p-6 sm:p-8">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Wiedza Parazytologiczna</h2>
+                <p class="text-slate-500 mb-8">Wybierz formę testowania teorii klinicznej.</p>
+
+                <div class="grid grid-cols-1 gap-4">
+                    <button onclick="selectTheorySubmode('single')" class="bg-white border-2 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 p-5 rounded-2xl shadow-sm transition text-left flex items-center justify-between">
+                        <div>
+                            <span class="font-bold text-lg text-slate-800 block mb-1">⚡ 1. Pojedyncze Informacje</span>
+                            <span class="text-slate-500 text-xs">Pytania o pojedynczą cechę (np. wrota zakażenia lub diagnostykę).</span>
+                        </div>
+                        <span class="text-slate-400">→</span>
+                    </button>
+
+                    <button onclick="selectTheorySubmode('full')" class="bg-white border-2 border-slate-200 hover:border-teal-500 hover:bg-teal-50 p-5 rounded-2xl shadow-sm transition text-left flex items-center justify-between">
+                        <div>
+                            <span class="font-bold text-lg text-slate-800 block mb-1">🃏 2. Karta Gatunku (Wszystkie Info)</span>
+                            <span class="text-slate-500 text-xs">Kompletna synteza kliniczna dla całego pasożyta.</span>
+                        </div>
                         <span class="text-slate-400">→</span>
                     </button>
                 </div>
@@ -418,9 +455,9 @@
                     </div>
                 </div>
 
-                <div id="quiz-text-card" class="hidden bg-slate-900 text-white w-full py-12 px-6 flex flex-col items-center justify-center text-center shadow-inner">
-                    <span id="quiz-text-label" class="text-xs uppercase font-bold tracking-widest text-blue-400 mb-2">Pytanie</span>
-                    <h3 id="quiz-text-prompt" class="text-3xl sm:text-4xl font-extrabold tracking-wide leading-tight break-words max-w-xl">...</h3>
+                <div id="quiz-text-card" class="hidden bg-slate-900 text-white w-full py-10 px-6 flex flex-col items-center justify-center text-center shadow-inner">
+                    <span id="quiz-text-label" class="text-xs uppercase font-bold tracking-widest text-emerald-400 mb-2">Pytanie</span>
+                    <h3 id="quiz-text-prompt" class="text-2xl sm:text-3xl font-extrabold tracking-wide leading-tight break-words max-w-xl">...</h3>
                 </div>
                 
                 <div class="p-6 sm:p-8 flex flex-col">
@@ -442,6 +479,10 @@
                             <label id="single-field-label" class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider text-center">Twoja odpowiedź</label>
                             <input type="text" id="guess-single" autocomplete="off" placeholder="..." class="w-full text-center text-xl font-bold px-4 py-3 rounded-xl border-2 border-slate-200 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition" onkeypress="if(event.key === 'Enter') checkAnswer()">
                         </div>
+
+                        <div id="field-full-theory-hint" class="hidden text-center py-4 text-slate-500 bg-slate-50 rounded-2xl border border-slate-200 text-sm">
+                            Przypomnij sobie w pamięci pełne dane tego gatunku (postać inwazyjna, diagnostyczna, wrota, bytowanie, objawy itp.), a następnie kliknij <strong>Sprawdź / Odkryj Karta</strong>.
+                        </div>
                         
                         <button onclick="checkAnswer()" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-200 transition text-lg tracking-wide">
                             Sprawdź
@@ -449,7 +490,7 @@
                     </div>
 
                     <div id="evaluation-zone" class="hidden flex-col items-center w-full">
-                        <div class="mb-6 w-full bg-slate-50 rounded-2xl p-5 border border-slate-200 flex flex-col gap-5 text-center shadow-inner">
+                        <div id="eval-standard-box" class="mb-6 w-full bg-slate-50 rounded-2xl p-5 border border-slate-200 flex flex-col gap-5 text-center shadow-inner">
                             <div id="eval-latin-block" class="border-b border-slate-200 pb-4">
                                 <p class="text-[10px] text-slate-500 uppercase font-bold mb-1 tracking-widest">Nazwa łacińska</p>
                                 <div id="diff-latin" class="text-lg font-medium tracking-wide mb-1 leading-tight break-words"></div>
@@ -467,6 +508,10 @@
                                 <div id="diff-form" class="text-lg font-medium tracking-wide mb-1 leading-tight break-words"></div>
                                 <div id="correct-form" class="text-xl font-bold text-blue-700 break-words"></div>
                             </div>
+                        </div>
+
+                        <!-- Panel Odkrytej Karty Gatunku (Dla podtrybu full theory) -->
+                        <div id="eval-full-card-box" class="hidden mb-6 w-full text-left">
                         </div>
 
                         <p class="text-sm font-semibold text-slate-500 mb-3 uppercase tracking-wide">Oceń swoją odpowiedź:</p>
@@ -667,8 +712,9 @@
     <script>
         let db = []; 
         let categories = ["Ogólne"];
-        let quizMainMode = 'classic';
+        let quizMainMode = 'classic'; // 'classic', 'text', 'theory'
         let quizTextSubmode = 'lat_pl';
+        let quizTheorySubmode = 'single'; // 'single', 'full'
         let currentPool = [];
         let douczanieSet = new Set(); 
         let currentItem = null;
@@ -802,9 +848,6 @@
             }
         }
 
-        /* ----------------------------------------------------- */
-        /* AUTOMATYCZNE WYPEŁNIANIE W DODAWANIU FISZKI           */
-        /* ----------------------------------------------------- */
         function autoFillKnowledgeFields(latinVal) {
             const query = (latinVal || "").trim().toLowerCase();
             if (!query) return;
@@ -841,9 +884,6 @@
             }
         }
 
-        /* ----------------------------------------------------- */
-        /* MODUŁ: UCZ SIĘ (KOMPENDIUM PARASITOLOGICZNE)          */
-        /* ----------------------------------------------------- */
         function updateStudyCategoryDropdown() {
             const select = document.getElementById('study-category-filter');
             if (!select) return;
@@ -1089,8 +1129,10 @@
             if (mode === 'classic') {
                 renderCategorySetup();
                 showView('quiz-setup-view');
-            } else {
+            } else if (mode === 'text') {
                 showView('quiz-text-submode-view');
+            } else if (mode === 'theory') {
+                showView('quiz-theory-submode-view');
             }
         }
 
@@ -1100,11 +1142,19 @@
             showView('quiz-setup-view');
         }
 
+        function selectTheorySubmode(submode) {
+            quizTheorySubmode = submode;
+            renderCategorySetup();
+            showView('quiz-setup-view');
+        }
+
         function goBackFromCategorySetup() {
             if (quizMainMode === 'classic') {
                 showView('quiz-mode-view');
-            } else {
+            } else if (quizMainMode === 'text') {
                 showView('quiz-text-submode-view');
+            } else if (quizMainMode === 'theory') {
+                showView('quiz-theory-submode-view');
             }
         }
 
@@ -1116,6 +1166,8 @@
                 let validCards = db.filter(c => c.category === cat);
                 if (quizMainMode === 'text') {
                     validCards = validCards.filter(c => c.latinName && c.latinName.trim() !== '' && c.polishName && c.polishName.trim() !== '');
+                } else if (quizMainMode === 'theory') {
+                    validCards = validCards.filter(c => c.invasiveForm || c.diagnosticForm || c.entryPortal || c.reproductionSite || c.diseaseName || c.detectionMethods || c.symptoms || c.importantNotes);
                 }
                 const count = validCards.length;
                 
@@ -1147,6 +1199,7 @@
             checkboxes.forEach(cb => cb.checked = true);
         }
 
+        /* LOGIKA PUDOWANIA DANYCH DO QUIZU */
         function executeQuizStart() {
             const selectedCats = Array.from(document.querySelectorAll('.quiz-cat-checkbox:checked')).map(cb => cb.value);
             
@@ -1156,24 +1209,70 @@
             }
 
             const rawPool = [];
-            db.forEach((card, index) => {
-                if (selectedCats.includes(card.category)) {
-                    if (quizMainMode === 'classic') {
-                        rawPool.push({ cardIndex: index, textDirection: null });
-                    } else {
-                        if (card.latinName && card.latinName.trim() !== '' && card.polishName && card.polishName.trim() !== '') {
-                            let direction = quizTextSubmode;
-                            if (quizTextSubmode === 'mix') {
-                                direction = Math.random() < 0.5 ? 'lat_pl' : 'pl_lat';
-                            }
-                            rawPool.push({ cardIndex: index, textDirection: direction });
-                        }
+            
+            if (quizMainMode === 'classic') {
+                db.forEach((card, index) => {
+                    if (selectedCats.includes(card.category)) {
+                        rawPool.push({ cardIndex: index, quizType: 'classic' });
                     }
+                });
+            } else if (quizMainMode === 'text') {
+                db.forEach((card, index) => {
+                    if (selectedCats.includes(card.category) && card.latinName && card.polishName) {
+                        let direction = quizTextSubmode;
+                        if (quizTextSubmode === 'mix') {
+                            direction = Math.random() < 0.5 ? 'lat_pl' : 'pl_lat';
+                        }
+                        rawPool.push({ cardIndex: index, quizType: 'text', textDirection: direction });
+                    }
+                });
+            } else if (quizMainMode === 'theory') {
+                const theoryFields = [
+                    { key: 'invasiveForm', label: 'Postać inwazyjna 🪱' },
+                    { key: 'diagnosticForm', label: 'Postać diagnostyczna 🔬' },
+                    { key: 'entryPortal', label: 'Wrota zakażenia 🚪' },
+                    { key: 'reproductionSite', label: 'Miejsce rozmnażania / bytowania 📍' },
+                    { key: 'diseaseName', label: 'Nazwa choroby 🏥' },
+                    { key: 'detectionMethods', label: 'Metody wykrywania 🧪' },
+                    { key: 'symptoms', label: 'Najważniejsze objawy ⚠️' },
+                    { key: 'importantNotes', label: 'Ważne uwagi 📌' }
+                ];
+
+                if (quizTheorySubmode === 'single') {
+                    db.forEach((card, index) => {
+                        if (selectedCats.includes(card.category)) {
+                            const available = theoryFields.filter(f => card[f.key] && card[f.key].trim() !== '');
+                            if (available.length > 0) {
+                                const pickedField = available[Math.floor(Math.random() * available.length)];
+                                rawPool.push({
+                                    cardIndex: index,
+                                    quizType: 'theory_single',
+                                    fieldKey: pickedField.key,
+                                    fieldLabel: pickedField.label
+                                });
+                            }
+                        }
+                    });
+                } else if (quizTheorySubmode === 'full') {
+                    const speciesSeen = new Set();
+                    db.forEach((card, index) => {
+                        if (selectedCats.includes(card.category)) {
+                            const latinKey = (card.latinName || "").trim().toLowerCase();
+                            const hasTheory = card.invasiveForm || card.diagnosticForm || card.entryPortal || card.reproductionSite || card.diseaseName || card.detectionMethods || card.symptoms || card.importantNotes;
+                            if (hasTheory && !speciesSeen.has(latinKey)) {
+                                speciesSeen.add(latinKey);
+                                rawPool.push({
+                                    cardIndex: index,
+                                    quizType: 'theory_full'
+                                });
+                            }
+                        }
+                    });
                 }
-            });
+            }
 
             if (rawPool.length === 0) {
-                showMessage("Brak odpowiednich fiszek w wybranych kategoriach.");
+                showMessage("Brak odpowiednich danych w wybranych kategoriach.");
                 return;
             }
 
@@ -1508,7 +1607,7 @@
             const exportData = {
                 categories: catsToExport,
                 cards: dbToExport,
-                version: 4
+                version: 5
             };
 
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData));
@@ -1595,6 +1694,7 @@
             document.getElementById('stat-remaining').textContent = currentPool.length;
         }
 
+        /* ŁADOWANIE PYTANIA QUIZOWEGO */
         function loadNextCard() {
             updateStats();
             if (currentPool.length === 0) { finishQuiz(); return; }
@@ -1614,8 +1714,16 @@
             const polishCont = document.getElementById('field-polish-container');
             const formCont = document.getElementById('field-form-container');
             const singleCont = document.getElementById('field-single-container');
+            const fullHint = document.getElementById('field-full-theory-hint');
 
-            if (quizMainMode === 'classic') {
+            // Resety kontenerów
+            latinCont.classList.add('hidden');
+            polishCont.classList.add('hidden');
+            formCont.classList.add('hidden');
+            singleCont.classList.add('hidden');
+            fullHint.classList.add('hidden');
+
+            if (currentItem.quizType === 'classic') {
                 imgContainer.classList.remove('hidden');
                 textCard.classList.add('hidden');
                 document.getElementById('quiz-image').src = card.image;
@@ -1623,16 +1731,11 @@
                 latinCont.classList.remove('hidden');
                 polishCont.classList.remove('hidden');
                 formCont.classList.remove('hidden');
-                singleCont.classList.add('hidden');
 
                 setTimeout(() => document.getElementById('guess-latin').focus(), 100);
-            } else {
+            } else if (currentItem.quizType === 'text') {
                 imgContainer.classList.add('hidden');
                 textCard.classList.remove('hidden');
-
-                latinCont.classList.add('hidden');
-                polishCont.classList.add('hidden');
-                formCont.classList.add('hidden');
                 singleCont.classList.remove('hidden');
 
                 const textLabel = document.getElementById('quiz-text-label');
@@ -1650,6 +1753,30 @@
                 }
 
                 setTimeout(() => document.getElementById('guess-single').focus(), 100);
+            } else if (currentItem.quizType === 'theory_single') {
+                imgContainer.classList.add('hidden');
+                textCard.classList.remove('hidden');
+                singleCont.classList.remove('hidden');
+
+                const textLabel = document.getElementById('quiz-text-label');
+                const textPrompt = document.getElementById('quiz-text-prompt');
+                const singleLabel = document.getElementById('single-field-label');
+
+                textLabel.textContent = `Podaj: ${currentItem.fieldLabel} dla:`;
+                textPrompt.textContent = card.latinName || card.polishName;
+                singleLabel.textContent = currentItem.fieldLabel;
+
+                setTimeout(() => document.getElementById('guess-single').focus(), 100);
+            } else if (currentItem.quizType === 'theory_full') {
+                imgContainer.classList.add('hidden');
+                textCard.classList.remove('hidden');
+                fullHint.classList.remove('hidden');
+
+                const textLabel = document.getElementById('quiz-text-label');
+                const textPrompt = document.getElementById('quiz-text-prompt');
+
+                textLabel.textContent = "Wiedza Kompletna (Karta Gatunku):";
+                textPrompt.textContent = card.latinName || card.polishName;
             }
             
             document.getElementById('input-zone').classList.remove('hidden');
@@ -1663,6 +1790,7 @@
             else if (currentField === 'polish') document.getElementById('guess-form').focus();
         }
 
+        /* SPRAWDZANIE ODPOWIEDZI */
         function checkAnswer() {
             const card = db[currentItem.cardIndex];
             document.getElementById('input-zone').classList.add('hidden');
@@ -1670,6 +1798,9 @@
             const evalZone = document.getElementById('evaluation-zone');
             evalZone.classList.remove('hidden');
             evalZone.classList.add('flex');
+
+            const stdBox = document.getElementById('eval-standard-box');
+            const fullBox = document.getElementById('eval-full-card-box');
 
             const evalLatin = document.getElementById('eval-latin-block');
             const evalPolish = document.getElementById('eval-polish-block');
@@ -1688,7 +1819,10 @@
                 corrEl.textContent = cStr || "(Zostawione puste przy dodawaniu fiszki)";
             }
 
-            if (quizMainMode === 'classic') {
+            if (currentItem.quizType === 'classic') {
+                stdBox.classList.remove('hidden');
+                fullBox.classList.add('hidden');
+
                 evalLatin.classList.remove('hidden');
                 evalPolish.classList.remove('hidden');
                 evalForm.classList.remove('hidden');
@@ -1700,7 +1834,9 @@
                 setEvalBlock('latin', uLatin, card.latinName);
                 setEvalBlock('polish', uPolish, card.polishName);
                 setEvalBlock('form', uForm, card.form);
-            } else {
+            } else if (currentItem.quizType === 'text') {
+                stdBox.classList.remove('hidden');
+                fullBox.classList.add('hidden');
                 evalForm.classList.add('hidden');
 
                 const uSingle = document.getElementById('guess-single').value.trim();
@@ -1714,6 +1850,46 @@
                     evalLatin.classList.remove('hidden');
                     setEvalBlock('latin', uSingle, card.latinName);
                 }
+            } else if (currentItem.quizType === 'theory_single') {
+                stdBox.classList.remove('hidden');
+                fullBox.classList.add('hidden');
+                evalForm.classList.add('hidden');
+                evalPolish.classList.add('hidden');
+                evalLatin.classList.remove('hidden');
+
+                const uSingle = document.getElementById('guess-single').value.trim();
+                const correctVal = card[currentItem.fieldKey];
+
+                const diffEl = document.getElementById('diff-latin');
+                const corrEl = document.getElementById('correct-latin');
+                
+                document.querySelector('#eval-latin-block p').textContent = currentItem.fieldLabel;
+
+                diffEl.innerHTML = generateFuzzyDiff(uSingle, correctVal || "");
+                corrEl.textContent = correctVal || "(Brak wpisu)";
+            } else if (currentItem.quizType === 'theory_full') {
+                stdBox.classList.add('hidden');
+                fullBox.classList.remove('hidden');
+
+                fullBox.innerHTML = `
+                    <div class="bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-2xl p-5 text-slate-800 space-y-3 shadow-inner">
+                        <div class="border-b border-emerald-200 pb-2">
+                            <h4 class="text-xl font-extrabold text-emerald-950">${card.latinName}</h4>
+                            <p class="text-sm font-semibold text-emerald-600">${card.polishName || ""}</p>
+                        </div>
+
+                        <div class="space-y-2 text-sm">
+                            ${card.invasiveForm ? `<div><strong class="text-emerald-900">Postać inwazyjna 🪱:</strong> ${card.invasiveForm}</div>` : ''}
+                            ${card.diagnosticForm ? `<div><strong class="text-teal-900">Postać diagnostyczna 🔬:</strong> ${card.diagnosticForm}</div>` : ''}
+                            ${card.entryPortal ? `<div><strong class="text-slate-700">Wrota zakażenia 🚪:</strong> ${card.entryPortal}</div>` : ''}
+                            ${card.reproductionSite ? `<div><strong class="text-slate-700">Miejsce bytowania 📍:</strong> ${card.reproductionSite}</div>` : ''}
+                            ${card.diseaseName ? `<div><strong class="text-slate-700">Choroba 🏥:</strong> ${card.diseaseName}</div>` : ''}
+                            ${card.detectionMethods ? `<div><strong class="text-slate-700">Metody 🧪:</strong> ${card.detectionMethods}</div>` : ''}
+                            ${card.symptoms ? `<div class="bg-amber-100/60 p-2.5 rounded-xl border border-amber-200"><strong class="text-amber-900">Objawy ⚠️:</strong> ${card.symptoms}</div>` : ''}
+                            ${card.importantNotes ? `<div class="bg-blue-100/60 p-2.5 rounded-xl border border-blue-200"><strong class="text-blue-900">Uwagi 📌:</strong> ${card.importantNotes}</div>` : ''}
+                        </div>
+                    </div>
+                `;
             }
         }
 
