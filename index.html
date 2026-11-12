@@ -117,6 +117,28 @@
         </div>
     </div>
 
+    <!-- Import Conflict Modal -->
+    <div id="importConflictModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-[65] flex justify-center items-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 text-center transform scale-95 transition-transform duration-200" id="import-conflict-box">
+            <div class="text-4xl mb-3">🔄</div>
+            <h3 class="text-xl font-bold mb-2 text-slate-800">Wykryto istniejące fiszki</h3>
+            <p id="import-conflict-text" class="mb-6 text-slate-600 text-sm leading-relaxed">
+                W pliku znajdują się fiszki, które już masz w bazie i zawierają inne dane w zapełnionych polach. Jak chcesz postąpić?
+            </p>
+            <div class="flex flex-col gap-2.5">
+                <button onclick="resolveImportConflict('overwrite')" class="px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition shadow-md">
+                    Nadpisz zapełnione pola nowymi danymi
+                </button>
+                <button onclick="resolveImportConflict('fill_empty')" class="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition shadow-md">
+                    Uzupełnij tylko brakujące (nie nadpisuj)
+                </button>
+                <button onclick="resolveImportConflict('cancel')" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition mt-1">
+                    Anuluj import
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Category Modal -->
     <div id="categoryModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-[60] flex justify-center items-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 transform scale-95 transition-transform duration-200" id="category-box">
@@ -817,12 +839,12 @@
     <script>
         let db = []; 
         let categories = ["Ogólne"];
-        let customSpeciesOrder = []; // Tablica kluczy (groupKey) z własną kolejnością w bazie wiedzy
-        let quizMainMode = 'classic'; // 'classic', 'text', 'theory'
-        let quizClassicSubmode = 'standard'; // 'standard', 'custom_fields'
+        let customSpeciesOrder = []; 
+        let quizMainMode = 'classic'; 
+        let quizClassicSubmode = 'standard'; 
         let quizTextSubmode = 'lat_pl';
-        let quizTheorySubmode = 'single'; // 'single', 'full'
-        let selectedQuestionLimit = 'all'; // '10', '15', '20', '25', '40', 'all', 'custom'
+        let quizTheorySubmode = 'single'; 
+        let selectedQuestionLimit = 'all'; 
         let currentMaxAvailableQuestions = 0;
 
         let currentPool = [];
@@ -830,7 +852,6 @@
         let currentItem = null;
         let score = 0;
 
-        // Definicja wszystkich dostępnych pól fiszki do trybu Zdjęcie + Wybrane Informacje
         const ALL_CARD_FIELDS = [
             { key: 'latinName', label: 'Nazwa łacińska 🏛️' },
             { key: 'polishName', label: 'Nazwa polska 🇵🇱' },
@@ -843,6 +864,17 @@
             { key: 'detectionMethods', label: 'Metody wykrywania 🧫' },
             { key: 'symptoms', label: 'Najważniejsze objawy ⚠️' },
             { key: 'importantNotes', label: 'Ważne uwagi 📌' }
+        ];
+
+        const CLINICAL_KEYS = [
+            'invasiveForm',
+            'diagnosticForm',
+            'entryPortal',
+            'reproductionSite',
+            'diseaseName',
+            'detectionMethods',
+            'symptoms',
+            'importantNotes'
         ];
 
         function showMessage(msg) {
@@ -983,34 +1015,39 @@
             const query = (latinVal || "").trim().toLowerCase();
             if (!query) return;
 
-            const existing = db.find(c => (c.latinName || "").trim().toLowerCase() === query);
-            if (existing) {
-                if (!document.getElementById('polish-input').value && existing.polishName) {
-                    document.getElementById('polish-input').value = existing.polishName;
+            const sameSpeciesCards = db.filter(c => (c.latinName || "").trim().toLowerCase() === query);
+            if (sameSpeciesCards.length > 0) {
+                const findVal = (key) => {
+                    const found = sameSpeciesCards.find(c => c[key] && c[key].trim() !== "");
+                    return found ? found[key] : "";
+                };
+
+                if (!document.getElementById('polish-input').value && findVal('polishName')) {
+                    document.getElementById('polish-input').value = findVal('polishName');
                 }
-                if (!document.getElementById('add-invasive-input').value && existing.invasiveForm) {
-                    document.getElementById('add-invasive-input').value = existing.invasiveForm;
+                if (!document.getElementById('add-invasive-input').value && findVal('invasiveForm')) {
+                    document.getElementById('add-invasive-input').value = findVal('invasiveForm');
                 }
-                if (!document.getElementById('add-diagnostic-input').value && existing.diagnosticForm) {
-                    document.getElementById('add-diagnostic-input').value = existing.diagnosticForm;
+                if (!document.getElementById('add-diagnostic-input').value && findVal('diagnosticForm')) {
+                    document.getElementById('add-diagnostic-input').value = findVal('diagnosticForm');
                 }
-                if (!document.getElementById('add-entry-input').value && existing.entryPortal) {
-                    document.getElementById('add-entry-input').value = existing.entryPortal;
+                if (!document.getElementById('add-entry-input').value && findVal('entryPortal')) {
+                    document.getElementById('add-entry-input').value = findVal('entryPortal');
                 }
-                if (!document.getElementById('add-site-input').value && existing.reproductionSite) {
-                    document.getElementById('add-site-input').value = existing.reproductionSite;
+                if (!document.getElementById('add-site-input').value && findVal('reproductionSite')) {
+                    document.getElementById('add-site-input').value = findVal('reproductionSite');
                 }
-                if (!document.getElementById('add-disease-input').value && existing.diseaseName) {
-                    document.getElementById('add-disease-input').value = existing.diseaseName;
+                if (!document.getElementById('add-disease-input').value && findVal('diseaseName')) {
+                    document.getElementById('add-disease-input').value = findVal('diseaseName');
                 }
-                if (!document.getElementById('add-methods-input').value && existing.detectionMethods) {
-                    document.getElementById('add-methods-input').value = existing.detectionMethods;
+                if (!document.getElementById('add-methods-input').value && findVal('detectionMethods')) {
+                    document.getElementById('add-methods-input').value = findVal('detectionMethods');
                 }
-                if (!document.getElementById('add-symptoms-input').value && existing.symptoms) {
-                    document.getElementById('add-symptoms-input').value = existing.symptoms;
+                if (!document.getElementById('add-symptoms-input').value && findVal('symptoms')) {
+                    document.getElementById('add-symptoms-input').value = findVal('symptoms');
                 }
-                if (!document.getElementById('add-notes-input').value && existing.importantNotes) {
-                    document.getElementById('add-notes-input').value = existing.importantNotes;
+                if (!document.getElementById('add-notes-input').value && findVal('importantNotes')) {
+                    document.getElementById('add-notes-input').value = findVal('importantNotes');
                 }
             }
         }
@@ -1038,13 +1075,11 @@
 
         function syncCustomSpeciesOrder(allGroupKeys) {
             let changed = false;
-            // Usuń klucze, których już nie ma w bazie
             const filtered = customSpeciesOrder.filter(k => allGroupKeys.includes(k));
             if (filtered.length !== customSpeciesOrder.length) {
                 customSpeciesOrder = filtered;
                 changed = true;
             }
-            // Dopisz nowe gatunki na koniec
             allGroupKeys.forEach(k => {
                 if (!customSpeciesOrder.includes(k)) {
                     customSpeciesOrder.push(k);
@@ -1120,7 +1155,6 @@
                 return;
             }
 
-            // Najpierw zbieramy wszystkie unikalne klucze w całej bazie, żeby zsynchronizować kolejność
             const allKeysSet = new Set();
             db.forEach(c => {
                 const lk = (c.latinName || "").trim();
@@ -1216,7 +1250,6 @@
                 cardDiv.className = "species-study-card bg-white border-2 border-slate-200/80 rounded-3xl p-5 sm:p-6 shadow-md hover:shadow-xl transition flex flex-col gap-5 relative";
                 cardDiv.dataset.groupKey = sp.groupKey;
 
-                // Obsługa Drag & Drop dla myszki (Desktop)
                 if (canReorder) {
                     cardDiv.addEventListener('dragover', (e) => {
                         e.preventDefault();
@@ -1305,7 +1338,6 @@
                     `;
                 }
 
-                // Kontrolki kolejności (Uchwyt 3 kreski + strzałki)
                 let reorderControlsHtml = '';
                 if (canReorder) {
                     reorderControlsHtml = `
@@ -1361,11 +1393,9 @@
                 cardDiv.innerHTML = headerHtml + clinicalHtml + itemsHtml;
                 container.appendChild(cardDiv);
 
-                // Przypięcie zdarzeń przeciągania (Desktop + Dotyk Mobile/Tablet) do uchwytu
                 if (canReorder) {
                     const handle = cardDiv.querySelector('.drag-handle');
                     if (handle) {
-                        // Desktop HTML5 drag
                         handle.setAttribute('draggable', 'true');
                         handle.addEventListener('dragstart', (e) => {
                             draggedGroupKey = sp.groupKey;
@@ -1378,7 +1408,6 @@
                             document.querySelectorAll('.species-study-card').forEach(el => el.classList.remove('species-card-drag-over'));
                         });
 
-                        // Touch events (Android / iPad / iPhone)
                         handle.addEventListener('touchstart', () => {
                             draggedGroupKey = sp.groupKey;
                             cardDiv.classList.add('species-card-dragging');
@@ -1469,7 +1498,6 @@
             }
         }
 
-        /* POBIERANIE WYBRANYCH PÓL W TRYBIE ZDJĘCIE + WYBRANE INFORMACJE */
         function getSelectedCustomFields() {
             return Array.from(document.querySelectorAll('.custom-quiz-field-cb:checked')).map(cb => cb.value);
         }
@@ -1489,7 +1517,6 @@
                         cb.type = "checkbox";
                         cb.value = f.key;
                         cb.className = "custom-quiz-field-cb w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500";
-                        // Domyślnie zaznaczamy np. nazwę łacińską i formę, ale użytkownik może zmienić wszystko
                         if (idx === 0 || idx === 2) cb.checked = true;
                         cb.onchange = () => {
                             refreshCategoryCounts();
@@ -1512,7 +1539,6 @@
             updateAvailableQuestionsUI();
         }
 
-        /* OBLICZANIE DOSTĘPNEJ PULI PYTAŃ DLA WYBRANYCH KATEGORII */
         function buildQuestionPoolForCategories(selectedCats) {
             const rawPool = [];
             
@@ -1528,7 +1554,6 @@
                     if (chosenFields.length > 0) {
                         db.forEach((card, index) => {
                             if (selectedCats.includes(card.category)) {
-                                // Fiszka wchodzi do puli, jeśli ma wypełnione CHOCIAŻ JEDNO z wybranych przez użytkownika pól
                                 const filledChosen = chosenFields.filter(key => card[key] && card[key].trim() !== '');
                                 if (filledChosen.length > 0) {
                                     rawPool.push({
@@ -1717,7 +1742,6 @@
             updateAvailableQuestionsUI();
         }
 
-        /* BUDOWANIE DANYCH DO QUIZU Z LIMITAMI */
         function executeQuizStart() {
             if (quizMainMode === 'classic' && quizClassicSubmode === 'custom_fields') {
                 if (getSelectedCustomFields().length === 0) {
@@ -1993,6 +2017,31 @@
             });
         }
 
+        /* BEZPIECZNA SYNCHRONIZACJA DANYCH KLINICZNYCH GATUNKU (BEZ KASOWANIA PUSTYMI POLAMI) */
+        function syncSpeciesClinicalData(latinName, targetCard) {
+            const cleanLatin = (latinName || "").trim().toLowerCase();
+            if (!cleanLatin) return;
+
+            const matchingCards = db.filter(c => (c.latinName || "").trim().toLowerCase() === cleanLatin);
+            if (matchingCards.length === 0) return;
+
+            CLINICAL_KEYS.forEach(key => {
+                const newVal = (targetCard[key] || "").trim();
+                if (newVal !== "") {
+                    // Jeśli wpisano nową treść, aktualizujemy wszystkie preparaty tego gatunku
+                    matchingCards.forEach(c => {
+                        c[key] = newVal;
+                    });
+                } else {
+                    // Jeśli pole w tej fiszce jest puste, pobieramy istniejącą wartość z innych fiszek tego gatunku
+                    const existingWithData = matchingCards.find(c => c.id !== targetCard.id && c[key] && c[key].trim() !== "");
+                    if (existingWithData) {
+                        targetCard[key] = existingWithData[key];
+                    }
+                }
+            });
+        }
+
         function saveCard() {
             const cat = document.getElementById('category-input').value;
             const latin = document.getElementById('latin-input').value.trim();
@@ -2029,21 +2078,7 @@
             };
 
             db.push(newCard);
-            
-            if (latin) {
-                db.forEach(c => {
-                    if ((c.latinName || "").trim().toLowerCase() === latin.toLowerCase()) {
-                        if (invasive) c.invasiveForm = invasive;
-                        if (diagnostic) c.diagnosticForm = diagnostic;
-                        if (entry) c.entryPortal = entry;
-                        if (site) c.reproductionSite = site;
-                        if (disease) c.diseaseName = disease;
-                        if (methods) c.detectionMethods = methods;
-                        if (symptoms) c.symptoms = symptoms;
-                        if (notes) c.importantNotes = notes;
-                    }
-                });
-            }
+            syncSpeciesClinicalData(latin, newCard);
 
             saveToLocalStorage();
 
@@ -2091,7 +2126,7 @@
                 categories: catsToExport,
                 cards: dbToExport,
                 customSpeciesOrder: customSpeciesOrder,
-                version: 7
+                version: 8
             };
 
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData));
@@ -2104,6 +2139,9 @@
             showMessage("Pobieranie bazy rozpoczęte!");
         }
 
+        /* INTELIGENTNY IMPORT Z PYTANIEM O NADPISANIE ZAPEŁNIONYCH PÓL */
+        let pendingImportData = null;
+
         function importDB(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -2113,6 +2151,7 @@
                     const imported = JSON.parse(e.target.result);
                     let importedCards = [];
                     let importedCats = [];
+                    let importedOrder = [];
 
                     if (Array.isArray(imported)) {
                         importedCards = imported;
@@ -2120,55 +2159,139 @@
                         importedCards = imported.cards;
                         importedCats = imported.categories || [];
                         if (Array.isArray(imported.customSpeciesOrder)) {
-                            imported.customSpeciesOrder.forEach(k => {
-                                if (!customSpeciesOrder.includes(k)) customSpeciesOrder.push(k);
-                            });
+                            importedOrder = imported.customSpeciesOrder;
                         }
                     } else {
                         showMessage("❌ Nieznany format JSON.");
                         return;
                     }
-                    
-                    let addedCount = 0;
 
-                    importedCats.forEach(cat => {
-                        if (!categories.includes(cat)) categories.push(cat);
-                    });
+                    const normalizedCards = importedCards.map(card => ({
+                        id: card.id || Date.now() + Math.random(),
+                        image: card.image,
+                        latinName: card.latinName !== undefined ? card.latinName : (card.answer || ""),
+                        polishName: card.polishName || "",
+                        form: card.form || "",
+                        category: card.category || "Ogólne",
+                        invasiveForm: card.invasiveForm || "",
+                        diagnosticForm: card.diagnosticForm || "",
+                        entryPortal: card.entryPortal || "",
+                        reproductionSite: card.reproductionSite || "",
+                        diseaseName: card.diseaseName || "",
+                        detectionMethods: card.detectionMethods || "",
+                        symptoms: card.symptoms || "",
+                        importantNotes: card.importantNotes || ""
+                    }));
 
-                    importedCards.forEach(card => {
-                        if (!db.some(c => c.id === card.id)) {
-                            let fixedCard = {
-                                id: card.id || Date.now() + Math.random(),
-                                image: card.image,
-                                latinName: card.latinName !== undefined ? card.latinName : (card.answer || ""),
-                                polishName: card.polishName || "",
-                                form: card.form || "",
-                                category: card.category || "Ogólne",
-                                invasiveForm: card.invasiveForm || "",
-                                diagnosticForm: card.diagnosticForm || "",
-                                entryPortal: card.entryPortal || "",
-                                reproductionSite: card.reproductionSite || "",
-                                diseaseName: card.diseaseName || "",
-                                detectionMethods: card.detectionMethods || "",
-                                symptoms: card.symptoms || "",
-                                importantNotes: card.importantNotes || ""
-                            };
-                            if (!categories.includes(fixedCard.category)) categories.push(fixedCard.category);
-                            db.push(fixedCard);
-                            addedCount++;
+                    const fieldsToCheck = ['latinName', 'polishName', 'form', ...CLINICAL_KEYS];
+                    let hasFilledFieldConflicts = false;
+
+                    normalizedCards.forEach(impCard => {
+                        const existing = db.find(c => c.id === impCard.id);
+                        if (existing) {
+                            for (const key of fieldsToCheck) {
+                                const oldVal = (existing[key] || "").trim();
+                                const newVal = (impCard[key] || "").trim();
+                                if (oldVal !== "" && newVal !== "" && oldVal !== newVal) {
+                                    hasFilledFieldConflicts = true;
+                                    break;
+                                }
+                            }
                         }
                     });
 
-                    saveToLocalStorage();
-                    updateCategoryDropdowns();
-                    updateStudyCategoryDropdown();
-                    showMessage(`✅ Zaimportowano ${addedCount} nowych fiszek!`);
+                    pendingImportData = {
+                        cards: normalizedCards,
+                        categories: importedCats,
+                        order: importedOrder
+                    };
+
+                    if (hasFilledFieldConflicts) {
+                        const modal = document.getElementById('importConflictModal');
+                        const box = document.getElementById('import-conflict-box');
+                        modal.classList.remove('hidden');
+                        setTimeout(() => box.classList.remove('scale-95'), 10);
+                    } else {
+                        executeImportMerge('fill_empty');
+                    }
                 } catch (err) {
                     showMessage("❌ Błąd podczas odczytu pliku.");
                 }
                 event.target.value = "";
             };
             reader.readAsText(file);
+        }
+
+        function resolveImportConflict(strategy) {
+            const modal = document.getElementById('importConflictModal');
+            const box = document.getElementById('import-conflict-box');
+            box.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                if (strategy === 'cancel') {
+                    pendingImportData = null;
+                    showMessage("Import anulowany.");
+                } else {
+                    executeImportMerge(strategy);
+                }
+            }, 200);
+        }
+
+        function executeImportMerge(strategy) {
+            if (!pendingImportData) return;
+
+            const { cards, categories: impCats, order: impOrder } = pendingImportData;
+            pendingImportData = null;
+
+            impCats.forEach(cat => {
+                if (!categories.includes(cat)) categories.push(cat);
+            });
+
+            impOrder.forEach(k => {
+                if (!customSpeciesOrder.includes(k)) customSpeciesOrder.push(k);
+            });
+
+            let addedCount = 0;
+            let updatedCount = 0;
+            const mergeKeys = ['latinName', 'polishName', 'form', 'category', ...CLINICAL_KEYS];
+
+            cards.forEach(impCard => {
+                if (!categories.includes(impCard.category)) {
+                    categories.push(impCard.category);
+                }
+
+                const existing = db.find(c => c.id === impCard.id);
+                if (!existing) {
+                    db.push(impCard);
+                    addedCount++;
+                } else {
+                    let wasUpdated = false;
+                    mergeKeys.forEach(key => {
+                        const oldVal = (existing[key] || "").trim();
+                        const newVal = (impCard[key] || "").trim();
+                        if (newVal !== "" && oldVal !== newVal) {
+                            if (oldVal === "" || strategy === 'overwrite') {
+                                existing[key] = newVal;
+                                wasUpdated = true;
+                            }
+                        }
+                    });
+                    if (strategy === 'overwrite' && impCard.image && existing.image !== impCard.image) {
+                        existing.image = impCard.image;
+                        wasUpdated = true;
+                    }
+                    if (wasUpdated) updatedCount++;
+                }
+            });
+
+            saveToLocalStorage(false);
+            updateCategoryDropdowns();
+            updateStudyCategoryDropdown();
+            
+            if (document.getElementById('study-view').classList.contains('active')) renderStudyView();
+            if (document.getElementById('edit-db-view').classList.contains('active')) renderEditView();
+
+            showMessage(`✅ Dodano: ${addedCount}, Zaktualizowano: ${updatedCount} fiszek!`);
         }
 
         function shuffleArray(array) {
@@ -2654,35 +2777,23 @@
             
             const cardIndex = db.findIndex(c => c.id === currentEditId);
             if(cardIndex !== -1) {
-                db[cardIndex].category = cat || "Ogólne";
-                db[cardIndex].latinName = latin;
-                db[cardIndex].polishName = polish;
-                db[cardIndex].form = form;
-                db[cardIndex].image = tempEditBase64;
+                const targetCard = db[cardIndex];
+                targetCard.category = cat || "Ogólne";
+                targetCard.latinName = latin;
+                targetCard.polishName = polish;
+                targetCard.form = form;
+                targetCard.image = tempEditBase64;
 
-                db[cardIndex].invasiveForm = invasive;
-                db[cardIndex].diagnosticForm = diagnostic;
-                db[cardIndex].entryPortal = entry;
-                db[cardIndex].reproductionSite = site;
-                db[cardIndex].diseaseName = disease;
-                db[cardIndex].detectionMethods = methods;
-                db[cardIndex].symptoms = symptoms;
-                db[cardIndex].importantNotes = notes;
+                targetCard.invasiveForm = invasive;
+                targetCard.diagnosticForm = diagnostic;
+                targetCard.entryPortal = entry;
+                targetCard.reproductionSite = site;
+                targetCard.diseaseName = disease;
+                targetCard.detectionMethods = methods;
+                targetCard.symptoms = symptoms;
+                targetCard.importantNotes = notes;
 
-                if (latin) {
-                    db.forEach(c => {
-                        if ((c.latinName || "").trim().toLowerCase() === latin.toLowerCase()) {
-                            c.invasiveForm = invasive;
-                            c.diagnosticForm = diagnostic;
-                            c.entryPortal = entry;
-                            c.reproductionSite = site;
-                            c.diseaseName = disease;
-                            c.detectionMethods = methods;
-                            c.symptoms = symptoms;
-                            c.importantNotes = notes;
-                        }
-                    });
-                }
+                syncSpeciesClinicalData(latin, targetCard);
 
                 saveToLocalStorage(true);
                 renderEditView();
