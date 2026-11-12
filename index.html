@@ -86,6 +86,52 @@
             user-select: none;
             -webkit-user-select: none;
         }
+
+        /* Style dla trybu zasłaniania odpowiedzi ("kartka") w Kompendium */
+        body.study-hide-active .spoiler-box {
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        body.study-hide-active .spoiler-box.is-masked .spoiler-content {
+            opacity: 0;
+            pointer-events: none;
+        }
+        body.study-hide-active .spoiler-box.is-masked {
+            background-color: #cbd5e1 !important;
+            border: 1px dashed #64748b !important;
+            min-height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        body.study-hide-active .spoiler-box.is-masked.spoiler-block {
+            display: flex;
+            width: 100%;
+            min-height: 36px;
+            margin-top: 4px;
+        }
+        body.study-hide-active .spoiler-box.is-masked::after {
+            content: "👁️ Kliknij, aby odkryć";
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: #334155;
+            letter-spacing: 0.02em;
+            padding: 2px 8px;
+            text-align: center;
+        }
+        body.study-hide-active .spoiler-box:not(.is-masked) {
+            background-color: rgba(16, 185, 129, 0.08);
+            outline: 1px dashed rgba(16, 185, 129, 0.45);
+            padding: 2px 6px;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col relative">
@@ -230,7 +276,12 @@
                         <h2 class="text-2xl font-bold text-slate-800">📖 Kompendium Parasitologiczne</h2>
                         <p class="text-sm text-slate-500 mt-1">Kompletna wiedza: mikroskopia, klinika, wrota zakażenia, diagnostyka i ważne uwagi.</p>
                     </div>
-                    <span class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-sm font-bold" id="study-species-count">0 gatunków</span>
+                    <div class="flex flex-wrap items-center gap-2.5 self-end md:self-center">
+                        <button type="button" id="toggle-study-hide-btn" onclick="toggleStudyHideMode()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold transition flex items-center gap-1.5 shadow-sm">
+                            <span>🙈</span> <span>Zasłoń odpowiedzi</span>
+                        </button>
+                        <span class="bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-full text-xs sm:text-sm font-bold" id="study-species-count">0 gatunków</span>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4 bg-slate-50 p-4 rounded-2xl border border-slate-200">
@@ -840,6 +891,7 @@
         let db = []; 
         let categories = ["Ogólne"];
         let customSpeciesOrder = []; 
+        let studyHideAnswersMode = false; // Stan trybu "kartka" w Kompendium
         let quizMainMode = 'classic'; 
         let quizClassicSubmode = 'standard'; 
         let quizTextSubmode = 'lat_pl';
@@ -1069,6 +1121,74 @@
         }
 
         /* ------------------------------------------------------------------ */
+        /* TRYB ZASŁANIANIA ODPOWIEDZI ("KARTKA") W KOMPENDIUM                */
+        /* ------------------------------------------------------------------ */
+        function toggleStudyHideMode() {
+            studyHideAnswersMode = !studyHideAnswersMode;
+            const btn = document.getElementById('toggle-study-hide-btn');
+
+            if (studyHideAnswersMode) {
+                document.body.classList.add('study-hide-active');
+                btn.className = "bg-amber-500 hover:bg-amber-600 text-white border border-amber-600 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold transition flex items-center gap-1.5 shadow-md";
+                btn.innerHTML = `<span>👁️</span> <span>Odkryj wszystkie</span>`;
+                
+                document.querySelectorAll('.spoiler-box').forEach(el => el.classList.add('is-masked'));
+                document.querySelectorAll('.species-reveal-btn').forEach(el => {
+                    el.classList.remove('hidden');
+                    el.dataset.revealed = "false";
+                    el.innerHTML = `<span>👁️</span> <span>Odkryj kartę</span>`;
+                });
+            } else {
+                document.body.classList.remove('study-hide-active');
+                btn.className = "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold transition flex items-center gap-1.5 shadow-sm";
+                btn.innerHTML = `<span>🙈</span> <span>Zasłoń odpowiedzi</span>`;
+
+                document.querySelectorAll('.spoiler-box').forEach(el => el.classList.remove('is-masked'));
+                document.querySelectorAll('.species-reveal-btn').forEach(el => el.classList.add('hidden'));
+            }
+        }
+
+        function handleSpoilerClick(el) {
+            if (!studyHideAnswersMode) return;
+            el.classList.toggle('is-masked');
+
+            // Aktualizacja przycisku w nagłówku danej karty gatunku
+            const parentCard = el.closest('.species-study-card');
+            if (parentCard) {
+                const btn = parentCard.querySelector('.species-reveal-btn');
+                const remainingMasked = parentCard.querySelectorAll('.spoiler-box.is-masked').length;
+                if (btn) {
+                    if (remainingMasked === 0) {
+                        btn.dataset.revealed = "true";
+                        btn.innerHTML = `<span>🙈</span> <span>Zasłoń kartę</span>`;
+                    } else {
+                        btn.dataset.revealed = "false";
+                        btn.innerHTML = `<span>👁️</span> <span>Odkryj kartę</span>`;
+                    }
+                }
+            }
+        }
+
+        function toggleSingleSpeciesSpoilers(btn) {
+            if (!studyHideAnswersMode) return;
+            const parentCard = btn.closest('.species-study-card');
+            if (!parentCard) return;
+
+            const isRevealed = btn.dataset.revealed === "true";
+            const spoilers = parentCard.querySelectorAll('.spoiler-box');
+
+            if (isRevealed) {
+                spoilers.forEach(s => s.classList.add('is-masked'));
+                btn.dataset.revealed = "false";
+                btn.innerHTML = `<span>👁️</span> <span>Odkryj kartę</span>`;
+            } else {
+                spoilers.forEach(s => s.classList.remove('is-masked'));
+                btn.dataset.revealed = "true";
+                btn.innerHTML = `<span>🙈</span> <span>Zasłoń kartę</span>`;
+            }
+        }
+
+        /* ------------------------------------------------------------------ */
         /* SORTOWANIE RĘCZNE I DRAG & DROP W BAZIE WIEDZY                     */
         /* ------------------------------------------------------------------ */
         let draggedGroupKey = null;
@@ -1245,6 +1365,8 @@
                 return;
             }
 
+            const maskClass = studyHideAnswersMode ? 'is-masked' : '';
+
             speciesArray.forEach((sp, index) => {
                 const cardDiv = document.createElement('div');
                 cardDiv.className = "species-study-card bg-white border-2 border-slate-200/80 rounded-3xl p-5 sm:p-6 shadow-md hover:shadow-xl transition flex flex-col gap-5 relative";
@@ -1287,52 +1409,68 @@
                                 ${sp.invasiveForm ? `
                                     <div class="bg-white/80 p-2.5 rounded-xl border border-emerald-100">
                                         <span class="block text-[11px] font-bold text-emerald-800 uppercase tracking-wide">Postać inwazyjna 🪱</span>
-                                        <span class="font-medium text-slate-900">${sp.invasiveForm}</span>
+                                        <div class="spoiler-box spoiler-block ${maskClass}" onclick="handleSpoilerClick(this)">
+                                            <span class="spoiler-content font-medium text-slate-900">${sp.invasiveForm}</span>
+                                        </div>
                                     </div>` : ''}
                                 
                                 ${sp.diagnosticForm ? `
                                     <div class="bg-white/80 p-2.5 rounded-xl border border-emerald-100">
                                         <span class="block text-[11px] font-bold text-teal-800 uppercase tracking-wide">Postać diagnostyczna 🔬</span>
-                                        <span class="font-medium text-slate-900">${sp.diagnosticForm}</span>
+                                        <div class="spoiler-box spoiler-block ${maskClass}" onclick="handleSpoilerClick(this)">
+                                            <span class="spoiler-content font-medium text-slate-900">${sp.diagnosticForm}</span>
+                                        </div>
                                     </div>` : ''}
                             </div>
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 ${sp.entryPortal ? `
                                     <div>
-                                        <span class="font-bold text-slate-700">Wrota zakażenia 🚪:</span> 
-                                        <span class="font-medium">${sp.entryPortal}</span>
+                                        <span class="font-bold text-slate-700 block sm:inline">Wrota zakażenia 🚪:</span> 
+                                        <span class="spoiler-box spoiler-block ${maskClass}" onclick="handleSpoilerClick(this)">
+                                            <span class="spoiler-content font-medium">${sp.entryPortal}</span>
+                                        </span>
                                     </div>` : ''}
                                 
                                 ${sp.reproductionSite ? `
                                     <div>
-                                        <span class="font-bold text-slate-700">Miejsce rozmnażania / bytowania 📍:</span> 
-                                        <span class="font-medium">${sp.reproductionSite}</span>
+                                        <span class="font-bold text-slate-700 block sm:inline">Miejsce rozmnażania / bytowania 📍:</span> 
+                                        <span class="spoiler-box spoiler-block ${maskClass}" onclick="handleSpoilerClick(this)">
+                                            <span class="spoiler-content font-medium">${sp.reproductionSite}</span>
+                                        </span>
                                     </div>` : ''}
                             </div>
 
                             ${sp.diseaseName ? `
                                 <div class="pt-1">
-                                    <span class="font-bold text-slate-700">Nazwa choroby 🏥:</span> 
-                                    <span class="font-semibold text-emerald-900 bg-emerald-100/60 px-2 py-0.5 rounded-md">${sp.diseaseName}</span>
+                                    <span class="font-bold text-slate-700 block sm:inline">Nazwa choroby 🏥:</span> 
+                                    <span class="spoiler-box spoiler-block ${maskClass}" onclick="handleSpoilerClick(this)">
+                                        <span class="spoiler-content font-semibold text-emerald-900 bg-emerald-100/60 px-2 py-0.5 rounded-md">${sp.diseaseName}</span>
+                                    </span>
                                 </div>` : ''}
 
                             ${sp.detectionMethods ? `
                                 <div>
-                                    <span class="font-bold text-slate-700">Metody wykrywania 🧪:</span> 
-                                    <span class="font-medium">${sp.detectionMethods}</span>
+                                    <span class="font-bold text-slate-700 block sm:inline">Metody wykrywania 🧪:</span> 
+                                    <span class="spoiler-box spoiler-block ${maskClass}" onclick="handleSpoilerClick(this)">
+                                        <span class="spoiler-content font-medium">${sp.detectionMethods}</span>
+                                    </span>
                                 </div>` : ''}
 
                             ${sp.symptoms ? `
                                 <div class="bg-amber-50/60 border border-amber-200/60 p-3 rounded-xl">
                                     <span class="block text-xs font-bold text-amber-900 uppercase tracking-wide mb-1">Najważniejsze objawy ⚠️</span>
-                                    <p class="text-xs sm:text-sm text-slate-800 font-medium whitespace-pre-line leading-relaxed">${sp.symptoms}</p>
+                                    <div class="spoiler-box spoiler-block ${maskClass}" onclick="handleSpoilerClick(this)">
+                                        <p class="spoiler-content text-xs sm:text-sm text-slate-800 font-medium whitespace-pre-line leading-relaxed">${sp.symptoms}</p>
+                                    </div>
                                 </div>` : ''}
 
                             ${sp.importantNotes ? `
                                 <div class="bg-blue-50/70 border border-blue-200/70 p-3 rounded-xl">
                                     <span class="block text-xs font-bold text-blue-900 uppercase tracking-wide mb-1">Ważne uwagi 📌</span>
-                                    <p class="text-xs sm:text-sm text-slate-800 font-medium whitespace-pre-line leading-relaxed">${sp.importantNotes}</p>
+                                    <div class="spoiler-box spoiler-block ${maskClass}" onclick="handleSpoilerClick(this)">
+                                        <p class="spoiler-content text-xs sm:text-sm text-slate-800 font-medium whitespace-pre-line leading-relaxed">${sp.importantNotes}</p>
+                                    </div>
                                 </div>` : ''}
                         </div>
                     `;
@@ -1363,7 +1501,10 @@
                                 ${sp.polishName ? `<p class="text-base font-semibold text-emerald-600 mt-0.5">${sp.polishName}</p>` : ''}
                             </div>
                         </div>
-                        <div class="flex items-center gap-2 self-end sm:self-center">
+                        <div class="flex flex-wrap items-center gap-2 self-end sm:self-center">
+                            <button type="button" data-revealed="false" onclick="toggleSingleSpeciesSpoilers(this)" class="species-reveal-btn ${studyHideAnswersMode ? '' : 'hidden'} bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1">
+                                <span>👁️</span> <span>Odkryj kartę</span>
+                            </button>
                             ${catsBadges}
                             <span class="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-lg border border-emerald-100">${sp.cards.length} ${sp.cards.length === 1 ? 'preparat' : 'preparaty'}</span>
                         </div>
@@ -1383,7 +1524,9 @@
                                 </div>
                             </div>
                             <div class="p-3 text-center bg-white border-t border-slate-100 flex-grow flex items-center justify-center">
-                                <span class="text-xs font-bold text-slate-700 uppercase tracking-wider bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">${formLabel}</span>
+                                <div class="spoiler-box spoiler-block ${maskClass}" onclick="handleSpoilerClick(this)">
+                                    <span class="spoiler-content text-xs font-bold text-slate-700 uppercase tracking-wider bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">${formLabel}</span>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -2017,7 +2160,6 @@
             });
         }
 
-        /* BEZPIECZNA SYNCHRONIZACJA DANYCH KLINICZNYCH GATUNKU (BEZ KASOWANIA PUSTYMI POLAMI) */
         function syncSpeciesClinicalData(latinName, targetCard) {
             const cleanLatin = (latinName || "").trim().toLowerCase();
             if (!cleanLatin) return;
@@ -2028,12 +2170,10 @@
             CLINICAL_KEYS.forEach(key => {
                 const newVal = (targetCard[key] || "").trim();
                 if (newVal !== "") {
-                    // Jeśli wpisano nową treść, aktualizujemy wszystkie preparaty tego gatunku
                     matchingCards.forEach(c => {
                         c[key] = newVal;
                     });
                 } else {
-                    // Jeśli pole w tej fiszce jest puste, pobieramy istniejącą wartość z innych fiszek tego gatunku
                     const existingWithData = matchingCards.find(c => c.id !== targetCard.id && c[key] && c[key].trim() !== "");
                     if (existingWithData) {
                         targetCard[key] = existingWithData[key];
@@ -2126,7 +2266,7 @@
                 categories: catsToExport,
                 cards: dbToExport,
                 customSpeciesOrder: customSpeciesOrder,
-                version: 8
+                version: 9
             };
 
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData));
@@ -2139,7 +2279,6 @@
             showMessage("Pobieranie bazy rozpoczęte!");
         }
 
-        /* INTELIGENTNY IMPORT Z PYTANIEM O NADPISANIE ZAPEŁNIONYCH PÓL */
         let pendingImportData = null;
 
         function importDB(event) {
@@ -2306,7 +2445,6 @@
             document.getElementById('stat-remaining').textContent = currentPool.length;
         }
 
-        /* ŁADOWANIE PYTANIA QUIZOWEGO */
         function loadNextCard() {
             updateStats();
             if (currentPool.length === 0) { finishQuiz(); return; }
@@ -2440,7 +2578,6 @@
             else if (currentField === 'polish') document.getElementById('guess-form').focus();
         }
 
-        /* SPRAWDZANIE ODPOWIEDZI */
         function checkAnswer() {
             const card = db[currentItem.cardIndex];
             document.getElementById('input-zone').classList.add('hidden');
