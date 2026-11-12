@@ -72,6 +72,20 @@
             border-color: #2563eb !important;
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
         }
+        .species-card-dragging {
+            opacity: 0.55;
+            border-color: #10b981 !important;
+            background-color: #ecfdf5 !important;
+            transform: scale(0.99);
+        }
+        .species-card-drag-over {
+            border-top: 4px solid #10b981 !important;
+        }
+        .drag-handle {
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col relative">
@@ -197,7 +211,7 @@
                     <span class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-sm font-bold" id="study-species-count">0 gatunków</span>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4 bg-slate-50 p-4 rounded-2xl border border-slate-200">
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wider">Szukaj (nazwa / objaw / wrota / uwagi)</label>
                         <input type="text" id="study-search" placeholder="np. Ascaris, jajo, kał..." oninput="renderStudyView()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
@@ -213,11 +227,18 @@
                         <select id="study-sort" onchange="renderStudyView()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white">
                             <option value="latin">Łacina (A - Z)</option>
                             <option value="polish">Polska (A - Z)</option>
+                            <option value="custom">Własna kolejność (Ręczna)</option>
                         </select>
                     </div>
                 </div>
+
+                <!-- Informacja dla trybu własnego sortowania -->
+                <div id="custom-sort-info" class="hidden mb-6 bg-emerald-50 border border-emerald-200 text-emerald-900 px-4 py-3 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-2">
+                    <span class="text-lg">≡</span>
+                    <span>Chwyć za uchwyt po lewej stronie karty i przeciągnij gatunek w dowolne miejsce lub użyj strzałek <strong>▲ / ▼</strong>. Kolejność zapisuje się automatycznie.</span>
+                </div>
                 
-                <div id="study-species-list" class="flex flex-col gap-8">
+                <div id="study-species-list" class="flex flex-col gap-6">
                 </div>
             </div>
         </div>
@@ -277,7 +298,7 @@
                         <h3 class="text-base font-bold text-emerald-900 flex items-center gap-2">
                             📚 Segment 2: Do Bazy Wiedzy (Klinika i Diagnostyka)
                         </h3>
-                        <span class="text-[11px] font-semibold bg-emerald-200/60 text-emerald-800 px-2.5 py-0.5 rounded-full">Tylko do bazy</span>
+                        <span class="text-[11px] font-semibold bg-emerald-200/60 text-emerald-800 px-2.5 py-0.5 rounded-full">Do bazy i quizów</span>
                     </div>
 
                     <div class="space-y-4">
@@ -344,7 +365,7 @@
                     <button onclick="selectMainMode('classic')" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white p-5 rounded-2xl shadow-lg transition transform hover:-translate-y-1 flex items-center justify-between text-left">
                         <div>
                             <span class="text-xl font-bold block mb-1">🖼️ 1. Rozpoznawanie Mikroskopowe</span>
-                            <span class="text-blue-100 text-xs">Rozpoznawaj preparaty na podstawie zdjęć.</span>
+                            <span class="text-blue-100 text-xs">Rozpoznawaj preparaty na podstawie zdjęć (Klasyczny lub własny zestaw pytań).</span>
                         </div>
                         <span class="text-xl ml-4">→</span>
                     </button>
@@ -363,6 +384,35 @@
                             <span class="text-emerald-100 text-xs">Wrota zakażenia, diagnostyka, objawy i kompendium.</span>
                         </div>
                         <span class="text-xl ml-4">→</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- WIDOK: PODTRYBY ROZPOZNAWANIA MIKROSKOPOWEGO -->
+        <div id="quiz-classic-submode-view" class="view-section w-full max-w-xl text-center">
+            <button onclick="showView('quiz-mode-view')" class="mb-4 text-slate-500 hover:text-slate-800 font-medium flex items-center justify-center gap-2 transition mx-auto">
+                <span>←</span> Wróć do wyboru trybu
+            </button>
+            <div class="bg-white rounded-3xl shadow-xl border border-slate-100 p-6 sm:p-8">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Rozpoznawanie Mikroskopowe</h2>
+                <p class="text-slate-500 mb-8">Wybierz wariant pytań towarzyszących zdjęciu preparatu.</p>
+
+                <div class="grid grid-cols-1 gap-4">
+                    <button onclick="selectClassicSubmode('standard')" class="bg-white border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 p-5 rounded-2xl shadow-sm transition text-left flex items-center justify-between">
+                        <div>
+                            <span class="font-bold text-lg text-slate-800 block mb-1">🖼️ 1. Klasyczny (Nazwy i Forma)</span>
+                            <span class="text-slate-500 text-xs">Standardowy tryb: podaj nazwę łacińską, polską oraz formę ze zdjęcia.</span>
+                        </div>
+                        <span class="text-slate-400">→</span>
+                    </button>
+
+                    <button onclick="selectClassicSubmode('custom_fields')" class="bg-white border-2 border-slate-200 hover:border-indigo-500 hover:bg-indigo-50 p-5 rounded-2xl shadow-sm transition text-left flex items-center justify-between">
+                        <div>
+                            <span class="font-bold text-lg text-slate-800 block mb-1">🎯 2. Zdjęcie + Wybrane Informacje</span>
+                            <span class="text-slate-500 text-xs">Sam wybierasz, o jakie cechy (np. wrota, objawy, uwagi) zapytać przy zdjęciu.</span>
+                        </div>
+                        <span class="text-slate-400">→</span>
                     </button>
                 </div>
             </div>
@@ -425,15 +475,29 @@
             </div>
         </div>
 
-        <!-- WIDOK: WYBÓR KATEGORII I LICZBY PYTAŃ -->
+        <!-- WIDOK: KONFIGURACJA QUIZU (KATEGORIE + ZAGADNIENIA + LICZBA PYTAŃ) -->
         <div id="quiz-setup-view" class="view-section w-full max-w-xl text-center">
             <button onclick="goBackFromCategorySetup()" class="mb-4 text-slate-500 hover:text-slate-800 font-medium flex items-center justify-center gap-2 transition mx-auto">
                 <span>←</span> Wróć
             </button>
             <div class="bg-white rounded-3xl shadow-xl border border-slate-100 p-6 sm:p-8">
                 <h2 class="text-2xl font-bold text-slate-800 mb-2">Konfiguracja Quizu</h2>
-                <p class="text-slate-500 mb-6">Wybierz kategorie oraz liczbę pytań na tę sesję.</p>
+                <p class="text-slate-500 mb-6">Wybierz zakres materiału oraz liczbę pytań na tę sesję.</p>
 
+                <!-- WYBÓR ZAGADNIEŃ (Tylko dla trybu Zdjęcie + Wybrane Informacje) -->
+                <div id="custom-fields-setup-section" class="hidden border-b border-slate-100 pb-6 mb-6 text-left">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="font-bold text-indigo-900 text-sm">🎯 Pytania przy zdjęciu:</span>
+                        <div class="flex gap-1.5">
+                            <button type="button" onclick="toggleAllCustomFields(true)" class="text-xs bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-2.5 py-1 rounded-lg font-semibold transition">Wszystkie</button>
+                            <button type="button" onclick="toggleAllCustomFields(false)" class="text-xs bg-slate-100 text-slate-600 hover:bg-slate-200 px-2.5 py-1 rounded-lg font-semibold transition">Odznacz</button>
+                        </div>
+                    </div>
+                    <div id="custom-fields-checkboxes" class="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-indigo-50/40 p-3.5 rounded-2xl border border-indigo-100 max-h-52 overflow-y-auto">
+                    </div>
+                </div>
+
+                <!-- WYBÓR KATEGORII -->
                 <div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
                     <span class="font-bold text-slate-700 text-sm">Dostępne kategorie:</span>
                     <button onclick="selectAllCategories()" class="text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg font-semibold transition">Wybierz wszystkie</button>
@@ -513,6 +577,10 @@
                             <input type="text" id="guess-single" autocomplete="off" placeholder="..." class="w-full text-center text-xl font-bold px-4 py-3 rounded-xl border-2 border-slate-200 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition" onkeypress="if(event.key === 'Enter') checkAnswer()">
                         </div>
 
+                        <!-- Dynamiczne pola dla trybu Zdjęcie + Wybrane Informacje -->
+                        <div id="field-dynamic-multi-container" class="hidden flex-col gap-4">
+                        </div>
+
                         <div id="field-full-theory-hint" class="hidden text-center py-4 text-slate-500 bg-slate-50 rounded-2xl border border-slate-200 text-sm">
                             Przypomnij sobie w pamięci pełne dane tego gatunku (postać inwazyjna, diagnostyczna, wrota, bytowanie, objawy itp.), a następnie kliknij <strong>Sprawdź / Odkryj Kartę</strong>.
                         </div>
@@ -541,6 +609,10 @@
                                 <div id="diff-form" class="text-lg font-medium tracking-wide mb-1 leading-tight break-words"></div>
                                 <div id="correct-form" class="text-xl font-bold text-blue-700 break-words"></div>
                             </div>
+                        </div>
+
+                        <!-- Dynamiczne wyniki dla Zdjęcie + Wybrane Informacje -->
+                        <div id="eval-dynamic-multi-box" class="hidden mb-6 w-full bg-slate-50 rounded-2xl p-5 border border-slate-200 flex-col gap-4 text-center shadow-inner">
                         </div>
 
                         <!-- Panel Odkrytej Karty Gatunku (Dla podtrybu full theory) -->
@@ -745,7 +817,9 @@
     <script>
         let db = []; 
         let categories = ["Ogólne"];
+        let customSpeciesOrder = []; // Tablica kluczy (groupKey) z własną kolejnością w bazie wiedzy
         let quizMainMode = 'classic'; // 'classic', 'text', 'theory'
+        let quizClassicSubmode = 'standard'; // 'standard', 'custom_fields'
         let quizTextSubmode = 'lat_pl';
         let quizTheorySubmode = 'single'; // 'single', 'full'
         let selectedQuestionLimit = 'all'; // '10', '15', '20', '25', '40', 'all', 'custom'
@@ -755,6 +829,21 @@
         let douczanieSet = new Set(); 
         let currentItem = null;
         let score = 0;
+
+        // Definicja wszystkich dostępnych pól fiszki do trybu Zdjęcie + Wybrane Informacje
+        const ALL_CARD_FIELDS = [
+            { key: 'latinName', label: 'Nazwa łacińska 🏛️' },
+            { key: 'polishName', label: 'Nazwa polska 🇵🇱' },
+            { key: 'form', label: 'Forma na zdjęciu 🔬' },
+            { key: 'invasiveForm', label: 'Postać inwazyjna 🪱' },
+            { key: 'diagnosticForm', label: 'Postać diagnostyczna 🧪' },
+            { key: 'entryPortal', label: 'Wrota zakażenia 🚪' },
+            { key: 'reproductionSite', label: 'Miejsce bytowania 📍' },
+            { key: 'diseaseName', label: 'Nazwa choroby 🏥' },
+            { key: 'detectionMethods', label: 'Metody wykrywania 🧫' },
+            { key: 'symptoms', label: 'Najważniejsze objawy ⚠️' },
+            { key: 'importantNotes', label: 'Ważne uwagi 📌' }
+        ];
 
         function showMessage(msg) {
             const toast = document.getElementById('toast');
@@ -805,6 +894,11 @@
             const savedCats = localStorage.getItem('parafiszki_cats');
             if (savedCats) {
                 try { categories = JSON.parse(savedCats); } catch(e) { categories = ["Ogólne"]; }
+            }
+
+            const savedOrder = localStorage.getItem('parafiszki_species_order');
+            if (savedOrder) {
+                try { customSpeciesOrder = JSON.parse(savedOrder); } catch(e) { customSpeciesOrder = []; }
             }
 
             const saved = localStorage.getItem('parafiszki_db');
@@ -858,6 +952,7 @@
             try {
                 localStorage.setItem('parafiszki_db', JSON.stringify(db));
                 localStorage.setItem('parafiszki_cats', JSON.stringify(categories));
+                localStorage.setItem('parafiszki_species_order', JSON.stringify(customSpeciesOrder));
                 updateDbCount();
                 if(showToast) showMessage("✅ Pomyślnie zapisano!");
             } catch (e) {
@@ -936,6 +1031,58 @@
             }
         }
 
+        /* ------------------------------------------------------------------ */
+        /* SORTOWANIE RĘCZNE I DRAG & DROP W BAZIE WIEDZY                     */
+        /* ------------------------------------------------------------------ */
+        let draggedGroupKey = null;
+
+        function syncCustomSpeciesOrder(allGroupKeys) {
+            let changed = false;
+            // Usuń klucze, których już nie ma w bazie
+            const filtered = customSpeciesOrder.filter(k => allGroupKeys.includes(k));
+            if (filtered.length !== customSpeciesOrder.length) {
+                customSpeciesOrder = filtered;
+                changed = true;
+            }
+            // Dopisz nowe gatunki na koniec
+            allGroupKeys.forEach(k => {
+                if (!customSpeciesOrder.includes(k)) {
+                    customSpeciesOrder.push(k);
+                    changed = true;
+                }
+            });
+            if (changed) {
+                localStorage.setItem('parafiszki_species_order', JSON.stringify(customSpeciesOrder));
+            }
+        }
+
+        function moveSpeciesOrder(groupKey, direction) {
+            const idx = customSpeciesOrder.indexOf(groupKey);
+            if (idx === -1) return;
+            const targetIdx = idx + direction;
+            if (targetIdx < 0 || targetIdx >= customSpeciesOrder.length) return;
+
+            const temp = customSpeciesOrder[idx];
+            customSpeciesOrder[idx] = customSpeciesOrder[targetIdx];
+            customSpeciesOrder[targetIdx] = temp;
+
+            localStorage.setItem('parafiszki_species_order', JSON.stringify(customSpeciesOrder));
+            renderStudyView();
+        }
+
+        function reorderSpeciesByDrag(sourceKey, targetKey) {
+            if (!sourceKey || !targetKey || sourceKey === targetKey) return;
+            const fromIdx = customSpeciesOrder.indexOf(sourceKey);
+            const toIdx = customSpeciesOrder.indexOf(targetKey);
+            if (fromIdx === -1 || toIdx === -1) return;
+
+            customSpeciesOrder.splice(fromIdx, 1);
+            customSpeciesOrder.splice(toIdx, 0, sourceKey);
+
+            localStorage.setItem('parafiszki_species_order', JSON.stringify(customSpeciesOrder));
+            renderStudyView();
+        }
+
         function renderStudyView() {
             const container = document.getElementById('study-species-list');
             if (!container) return;
@@ -947,6 +1094,23 @@
             const sortElem = document.getElementById('study-sort');
             const sortBy = sortElem ? sortElem.value : 'latin';
 
+            const isCustomSort = (sortBy === 'custom');
+            const canReorder = isCustomSort && searchVal === "" && catFilter === 'ALL';
+            
+            const infoBox = document.getElementById('custom-sort-info');
+            if (infoBox) {
+                if (isCustomSort) {
+                    infoBox.classList.remove('hidden');
+                    if (!canReorder) {
+                        infoBox.innerHTML = `<span class="text-lg">⚠️</span><span>Wyłącz wyszukiwanie i wybierz "Wszystkie kategorie", aby swobodnie przeciągać i zmieniać kolejność gatunków.</span>`;
+                    } else {
+                        infoBox.innerHTML = `<span class="text-lg">≡</span><span>Chwyć za uchwyt po lewej stronie karty i przeciągnij gatunek w dowolne miejsce lub użyj strzałek <strong>▲ / ▼</strong>. Kolejność zapisuje się automatycznie.</span>`;
+                    }
+                } else {
+                    infoBox.classList.add('hidden');
+                }
+            }
+
             container.innerHTML = '';
 
             if (!db || db.length === 0) {
@@ -955,6 +1119,15 @@
                 if(countElem) countElem.textContent = '0 gatunków';
                 return;
             }
+
+            // Najpierw zbieramy wszystkie unikalne klucze w całej bazie, żeby zsynchronizować kolejność
+            const allKeysSet = new Set();
+            db.forEach(c => {
+                const lk = (c.latinName || "").trim();
+                const pk = (c.polishName || "").trim();
+                allKeysSet.add(lk.toLowerCase() || pk.toLowerCase() || 'nieokreslony');
+            });
+            syncCustomSpeciesOrder(Array.from(allKeysSet));
 
             const speciesMap = {};
 
@@ -969,6 +1142,7 @@
 
                 if (!speciesMap[groupKey]) {
                     speciesMap[groupKey] = {
+                        groupKey: groupKey,
                         latinName: latinKey,
                         polishName: polishKey,
                         categories: new Set(),
@@ -1016,7 +1190,9 @@
             }
 
             speciesArray.sort((a, b) => {
-                if (sortBy === 'latin') {
+                if (sortBy === 'custom') {
+                    return customSpeciesOrder.indexOf(a.groupKey) - customSpeciesOrder.indexOf(b.groupKey);
+                } else if (sortBy === 'latin') {
                     const nameA = a.latinName || a.polishName || "";
                     const nameB = b.latinName || b.polishName || "";
                     return nameA.localeCompare(nameB);
@@ -1035,9 +1211,30 @@
                 return;
             }
 
-            speciesArray.forEach(sp => {
+            speciesArray.forEach((sp, index) => {
                 const cardDiv = document.createElement('div');
-                cardDiv.className = "bg-white border-2 border-slate-200/80 rounded-3xl p-6 shadow-md hover:shadow-xl transition flex flex-col gap-5";
+                cardDiv.className = "species-study-card bg-white border-2 border-slate-200/80 rounded-3xl p-5 sm:p-6 shadow-md hover:shadow-xl transition flex flex-col gap-5 relative";
+                cardDiv.dataset.groupKey = sp.groupKey;
+
+                // Obsługa Drag & Drop dla myszki (Desktop)
+                if (canReorder) {
+                    cardDiv.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        if (draggedGroupKey && draggedGroupKey !== sp.groupKey) {
+                            cardDiv.classList.add('species-card-drag-over');
+                        }
+                    });
+                    cardDiv.addEventListener('dragleave', () => {
+                        cardDiv.classList.remove('species-card-drag-over');
+                    });
+                    cardDiv.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        cardDiv.classList.remove('species-card-drag-over');
+                        if (draggedGroupKey && draggedGroupKey !== sp.groupKey) {
+                            reorderSpeciesByDrag(draggedGroupKey, sp.groupKey);
+                        }
+                    });
+                }
 
                 const catsBadges = Array.from(sp.categories).map(c => 
                     `<span class="px-2.5 py-0.5 bg-slate-100 text-slate-600 text-xs font-bold rounded-lg border border-slate-200">${c}</span>`
@@ -1108,13 +1305,33 @@
                     `;
                 }
 
-                const headerHtml = `
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-3 gap-2">
-                        <div>
-                            ${sp.latinName ? `<h3 class="text-2xl font-extrabold text-slate-800 tracking-tight leading-tight">${sp.latinName}</h3>` : ''}
-                            ${sp.polishName ? `<p class="text-base font-semibold text-emerald-600 mt-0.5">${sp.polishName}</p>` : ''}
+                // Kontrolki kolejności (Uchwyt 3 kreski + strzałki)
+                let reorderControlsHtml = '';
+                if (canReorder) {
+                    reorderControlsHtml = `
+                        <div class="flex items-center gap-1.5 mr-2 flex-shrink-0">
+                            <div class="drag-handle cursor-grab active:cursor-grabbing bg-slate-100 hover:bg-emerald-100 text-slate-500 hover:text-emerald-700 px-2.5 py-2 rounded-xl border border-slate-200 flex flex-col items-center justify-center transition" title="Przytrzymaj i przeciągnij">
+                                <span class="text-lg font-extrabold leading-none">≡</span>
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <button type="button" onclick="moveSpeciesOrder('${sp.groupKey.replace(/'/g, "\\'")}', -1)" ${index === 0 ? 'disabled' : ''} class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 disabled:opacity-30 text-slate-700 rounded text-[10px] font-bold transition">▲</button>
+                                <button type="button" onclick="moveSpeciesOrder('${sp.groupKey.replace(/'/g, "\\'")}', 1)" ${index === speciesArray.length - 1 ? 'disabled' : ''} class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 disabled:opacity-30 text-slate-700 rounded text-[10px] font-bold transition">▼</button>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-2">
+                    `;
+                }
+
+                const headerHtml = `
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-3 gap-3">
+                        <div class="flex items-center">
+                            ${reorderControlsHtml}
+                            <div>
+                                ${isCustomSort ? `<span class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider block">#${index + 1} na liście</span>` : ''}
+                                ${sp.latinName ? `<h3 class="text-2xl font-extrabold text-slate-800 tracking-tight leading-tight">${sp.latinName}</h3>` : ''}
+                                ${sp.polishName ? `<p class="text-base font-semibold text-emerald-600 mt-0.5">${sp.polishName}</p>` : ''}
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 self-end sm:self-center">
                             ${catsBadges}
                             <span class="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-lg border border-emerald-100">${sp.cards.length} ${sp.cards.length === 1 ? 'preparat' : 'preparaty'}</span>
                         </div>
@@ -1143,6 +1360,59 @@
 
                 cardDiv.innerHTML = headerHtml + clinicalHtml + itemsHtml;
                 container.appendChild(cardDiv);
+
+                // Przypięcie zdarzeń przeciągania (Desktop + Dotyk Mobile/Tablet) do uchwytu
+                if (canReorder) {
+                    const handle = cardDiv.querySelector('.drag-handle');
+                    if (handle) {
+                        // Desktop HTML5 drag
+                        handle.setAttribute('draggable', 'true');
+                        handle.addEventListener('dragstart', (e) => {
+                            draggedGroupKey = sp.groupKey;
+                            cardDiv.classList.add('species-card-dragging');
+                            e.dataTransfer.effectAllowed = 'move';
+                        });
+                        handle.addEventListener('dragend', () => {
+                            draggedGroupKey = null;
+                            cardDiv.classList.remove('species-card-dragging');
+                            document.querySelectorAll('.species-study-card').forEach(el => el.classList.remove('species-card-drag-over'));
+                        });
+
+                        // Touch events (Android / iPad / iPhone)
+                        handle.addEventListener('touchstart', () => {
+                            draggedGroupKey = sp.groupKey;
+                            cardDiv.classList.add('species-card-dragging');
+                        }, { passive: true });
+
+                        handle.addEventListener('touchmove', (e) => {
+                            if (!draggedGroupKey) return;
+                            e.preventDefault();
+                            const touch = e.touches[0];
+                            const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
+                            const targetCard = targetEl ? targetEl.closest('.species-study-card') : null;
+                            
+                            document.querySelectorAll('.species-study-card').forEach(el => el.classList.remove('species-card-drag-over'));
+                            if (targetCard && targetCard.dataset.groupKey !== draggedGroupKey) {
+                                targetCard.classList.add('species-card-drag-over');
+                            }
+                        }, { passive: false });
+
+                        handle.addEventListener('touchend', (e) => {
+                            if (!draggedGroupKey) return;
+                            const touch = e.changedTouches[0];
+                            const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
+                            const targetCard = targetEl ? targetEl.closest('.species-study-card') : null;
+
+                            cardDiv.classList.remove('species-card-dragging');
+                            document.querySelectorAll('.species-study-card').forEach(el => el.classList.remove('species-card-drag-over'));
+
+                            if (targetCard && targetCard.dataset.groupKey && targetCard.dataset.groupKey !== draggedGroupKey) {
+                                reorderSpeciesByDrag(draggedGroupKey, targetCard.dataset.groupKey);
+                            }
+                            draggedGroupKey = null;
+                        });
+                    }
+                }
             });
         }
 
@@ -1163,13 +1433,18 @@
         function selectMainMode(mode) {
             quizMainMode = mode;
             if (mode === 'classic') {
-                renderCategorySetup();
-                showView('quiz-setup-view');
+                showView('quiz-classic-submode-view');
             } else if (mode === 'text') {
                 showView('quiz-text-submode-view');
             } else if (mode === 'theory') {
                 showView('quiz-theory-submode-view');
             }
+        }
+
+        function selectClassicSubmode(submode) {
+            quizClassicSubmode = submode;
+            renderCategorySetup();
+            showView('quiz-setup-view');
         }
 
         function selectTextSubmode(submode) {
@@ -1186,7 +1461,7 @@
 
         function goBackFromCategorySetup() {
             if (quizMainMode === 'classic') {
-                showView('quiz-mode-view');
+                showView('quiz-classic-submode-view');
             } else if (quizMainMode === 'text') {
                 showView('quiz-text-submode-view');
             } else if (quizMainMode === 'theory') {
@@ -1194,16 +1469,78 @@
             }
         }
 
+        /* POBIERANIE WYBRANYCH PÓL W TRYBIE ZDJĘCIE + WYBRANE INFORMACJE */
+        function getSelectedCustomFields() {
+            return Array.from(document.querySelectorAll('.custom-quiz-field-cb:checked')).map(cb => cb.value);
+        }
+
+        function renderCustomFieldsSelector() {
+            const section = document.getElementById('custom-fields-setup-section');
+            const container = document.getElementById('custom-fields-checkboxes');
+            
+            if (quizMainMode === 'classic' && quizClassicSubmode === 'custom_fields') {
+                section.classList.remove('hidden');
+                if (container.children.length === 0) {
+                    ALL_CARD_FIELDS.forEach((f, idx) => {
+                        const label = document.createElement('label');
+                        label.className = "flex items-center gap-2 p-2 rounded-xl bg-white border border-indigo-100 cursor-pointer hover:bg-indigo-50 transition text-xs font-semibold text-slate-700";
+                        
+                        const cb = document.createElement('input');
+                        cb.type = "checkbox";
+                        cb.value = f.key;
+                        cb.className = "custom-quiz-field-cb w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500";
+                        // Domyślnie zaznaczamy np. nazwę łacińską i formę, ale użytkownik może zmienić wszystko
+                        if (idx === 0 || idx === 2) cb.checked = true;
+                        cb.onchange = () => {
+                            refreshCategoryCounts();
+                            updateAvailableQuestionsUI();
+                        };
+
+                        label.appendChild(cb);
+                        label.appendChild(document.createTextNode(f.label));
+                        container.appendChild(label);
+                    });
+                }
+            } else {
+                section.classList.add('hidden');
+            }
+        }
+
+        function toggleAllCustomFields(state) {
+            document.querySelectorAll('.custom-quiz-field-cb').forEach(cb => cb.checked = state);
+            refreshCategoryCounts();
+            updateAvailableQuestionsUI();
+        }
+
         /* OBLICZANIE DOSTĘPNEJ PULI PYTAŃ DLA WYBRANYCH KATEGORII */
         function buildQuestionPoolForCategories(selectedCats) {
             const rawPool = [];
             
             if (quizMainMode === 'classic') {
-                db.forEach((card, index) => {
-                    if (selectedCats.includes(card.category)) {
-                        rawPool.push({ cardIndex: index, quizType: 'classic' });
+                if (quizClassicSubmode === 'standard') {
+                    db.forEach((card, index) => {
+                        if (selectedCats.includes(card.category)) {
+                            rawPool.push({ cardIndex: index, quizType: 'classic' });
+                        }
+                    });
+                } else if (quizClassicSubmode === 'custom_fields') {
+                    const chosenFields = getSelectedCustomFields();
+                    if (chosenFields.length > 0) {
+                        db.forEach((card, index) => {
+                            if (selectedCats.includes(card.category)) {
+                                // Fiszka wchodzi do puli, jeśli ma wypełnione CHOCIAŻ JEDNO z wybranych przez użytkownika pól
+                                const filledChosen = chosenFields.filter(key => card[key] && card[key].trim() !== '');
+                                if (filledChosen.length > 0) {
+                                    rawPool.push({
+                                        cardIndex: index,
+                                        quizType: 'classic_custom',
+                                        activeFields: filledChosen
+                                    });
+                                }
+                            }
+                        });
                     }
-                });
+                }
             } else if (quizMainMode === 'text') {
                 db.forEach((card, index) => {
                     if (selectedCats.includes(card.category) && card.latinName && card.polishName) {
@@ -1261,7 +1598,34 @@
             return rawPool;
         }
 
+        function refreshCategoryCounts() {
+            const labels = document.querySelectorAll('#quiz-categories-container label');
+            labels.forEach(label => {
+                const cb = label.querySelector('input.quiz-cat-checkbox');
+                const cat = cb.value;
+                const count = buildQuestionPoolForCategories([cat]).length;
+                const nameSpan = label.querySelector('.cat-name-span');
+                const countSpan = label.querySelector('.cat-count-span');
+
+                countSpan.textContent = `${count} pytań`;
+                if (count === 0) {
+                    cb.checked = false;
+                    cb.disabled = true;
+                    nameSpan.classList.add('opacity-50');
+                    countSpan.className = "cat-count-span text-sm font-bold text-slate-400";
+                } else {
+                    const wasDisabled = cb.disabled;
+                    cb.disabled = false;
+                    if (wasDisabled) cb.checked = true;
+                    nameSpan.classList.remove('opacity-50');
+                    countSpan.className = "cat-count-span text-sm font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-lg";
+                }
+            });
+        }
+
         function renderCategorySetup() {
+            renderCustomFieldsSelector();
+
             const container = document.getElementById('quiz-categories-container');
             container.innerHTML = '';
             
@@ -1283,8 +1647,8 @@
                 const textDiv = document.createElement('div');
                 textDiv.className = "flex-1 flex justify-between";
                 textDiv.innerHTML = `
-                    <span class="font-semibold text-slate-700 ${count === 0 ? 'opacity-50' : ''}">${cat}</span>
-                    <span class="text-sm font-bold ${count === 0 ? 'text-slate-400' : 'text-blue-600 bg-blue-100 px-2 py-0.5 rounded-lg'}">${count} pytań</span>
+                    <span class="cat-name-span font-semibold text-slate-700 ${count === 0 ? 'opacity-50' : ''}">${cat}</span>
+                    <span class="cat-count-span text-sm font-bold ${count === 0 ? 'text-slate-400' : 'text-blue-600 bg-blue-100 px-2 py-0.5 rounded-lg'}">${count} pytań</span>
                 `;
                 
                 label.appendChild(checkbox);
@@ -1355,6 +1719,13 @@
 
         /* BUDOWANIE DANYCH DO QUIZU Z LIMITAMI */
         function executeQuizStart() {
+            if (quizMainMode === 'classic' && quizClassicSubmode === 'custom_fields') {
+                if (getSelectedCustomFields().length === 0) {
+                    showMessage("Zaznacz przynajmniej jedno zagadnienie do odpytania!");
+                    return;
+                }
+            }
+
             const selectedCats = Array.from(document.querySelectorAll('.quiz-cat-checkbox:checked')).map(cb => cb.value);
             
             if (selectedCats.length === 0) {
@@ -1719,7 +2090,8 @@
             const exportData = {
                 categories: catsToExport,
                 cards: dbToExport,
-                version: 6
+                customSpeciesOrder: customSpeciesOrder,
+                version: 7
             };
 
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData));
@@ -1747,6 +2119,11 @@
                     } else if (imported.cards) {
                         importedCards = imported.cards;
                         importedCats = imported.categories || [];
+                        if (Array.isArray(imported.customSpeciesOrder)) {
+                            imported.customSpeciesOrder.forEach(k => {
+                                if (!customSpeciesOrder.includes(k)) customSpeciesOrder.push(k);
+                            });
+                        }
                     } else {
                         showMessage("❌ Nieznany format JSON.");
                         return;
@@ -1826,12 +2203,16 @@
             const polishCont = document.getElementById('field-polish-container');
             const formCont = document.getElementById('field-form-container');
             const singleCont = document.getElementById('field-single-container');
+            const dynamicMultiCont = document.getElementById('field-dynamic-multi-container');
             const fullHint = document.getElementById('field-full-theory-hint');
 
             latinCont.classList.add('hidden');
             polishCont.classList.add('hidden');
             formCont.classList.add('hidden');
             singleCont.classList.add('hidden');
+            dynamicMultiCont.classList.add('hidden');
+            dynamicMultiCont.classList.remove('flex');
+            dynamicMultiCont.innerHTML = '';
             fullHint.classList.add('hidden');
 
             if (currentItem.quizType === 'classic') {
@@ -1844,6 +2225,41 @@
                 formCont.classList.remove('hidden');
 
                 setTimeout(() => document.getElementById('guess-latin').focus(), 100);
+            } else if (currentItem.quizType === 'classic_custom') {
+                imgContainer.classList.remove('hidden');
+                textCard.classList.add('hidden');
+                document.getElementById('quiz-image').src = card.image;
+
+                dynamicMultiCont.classList.remove('hidden');
+                dynamicMultiCont.classList.add('flex');
+
+                currentItem.activeFields.forEach((fKey, idx) => {
+                    const meta = ALL_CARD_FIELDS.find(m => m.key === fKey);
+                    const labelText = meta ? meta.label : fKey;
+                    const isLast = (idx === currentItem.activeFields.length - 1);
+
+                    const fieldDiv = document.createElement('div');
+                    fieldDiv.innerHTML = `
+                        <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider text-center">${labelText}</label>
+                        <input type="text" data-field-key="${fKey}" autocomplete="off" placeholder="..." class="dynamic-custom-guess w-full text-center text-lg font-bold px-4 py-3 rounded-xl border-2 border-slate-200 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition">
+                    `;
+                    const inp = fieldDiv.querySelector('input');
+                    inp.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            if (isLast) {
+                                checkAnswer();
+                            } else {
+                                const allInps = Array.from(dynamicMultiCont.querySelectorAll('input'));
+                                if (allInps[idx + 1]) allInps[idx + 1].focus();
+                            }
+                        }
+                    });
+                    dynamicMultiCont.appendChild(fieldDiv);
+                });
+
+                const firstInp = dynamicMultiCont.querySelector('input');
+                if (firstInp) setTimeout(() => firstInp.focus(), 100);
+
             } else if (currentItem.quizType === 'text') {
                 imgContainer.classList.add('hidden');
                 textCard.classList.remove('hidden');
@@ -1911,11 +2327,17 @@
             evalZone.classList.add('flex');
 
             const stdBox = document.getElementById('eval-standard-box');
+            const dynamicBox = document.getElementById('eval-dynamic-multi-box');
             const fullBox = document.getElementById('eval-full-card-box');
 
             const evalLatin = document.getElementById('eval-latin-block');
             const evalPolish = document.getElementById('eval-polish-block');
             const evalForm = document.getElementById('eval-form-block');
+
+            stdBox.classList.add('hidden');
+            dynamicBox.classList.add('hidden');
+            dynamicBox.classList.remove('flex');
+            fullBox.classList.add('hidden');
 
             function setEvalBlock(type, uStr, cStr) {
                 const diffEl = document.getElementById(`diff-${type}`);
@@ -1932,8 +2354,6 @@
 
             if (currentItem.quizType === 'classic') {
                 stdBox.classList.remove('hidden');
-                fullBox.classList.add('hidden');
-
                 evalLatin.classList.remove('hidden');
                 evalPolish.classList.remove('hidden');
                 evalForm.classList.remove('hidden');
@@ -1947,9 +2367,33 @@
                 setEvalBlock('latin', uLatin, card.latinName);
                 setEvalBlock('polish', uPolish, card.polishName);
                 setEvalBlock('form', uForm, card.form);
+
+            } else if (currentItem.quizType === 'classic_custom') {
+                dynamicBox.classList.remove('hidden');
+                dynamicBox.classList.add('flex');
+                dynamicBox.innerHTML = '';
+
+                const inputs = Array.from(document.querySelectorAll('.dynamic-custom-guess'));
+                inputs.forEach((inp, idx) => {
+                    const fKey = inp.dataset.fieldKey;
+                    const uVal = inp.value.trim();
+                    const cVal = card[fKey] || "";
+                    const meta = ALL_CARD_FIELDS.find(m => m.key === fKey);
+                    const labelText = meta ? meta.label : fKey;
+                    const isLast = (idx === inputs.length - 1);
+
+                    const block = document.createElement('div');
+                    block.className = isLast ? "" : "border-b border-slate-200 pb-4";
+                    block.innerHTML = `
+                        <p class="text-[10px] text-slate-500 uppercase font-bold mb-1 tracking-widest">${labelText}</p>
+                        <div class="text-lg font-medium tracking-wide mb-1 leading-tight break-words">${generateFuzzyDiff(uVal, cVal)}</div>
+                        <div class="text-lg sm:text-xl font-bold text-indigo-700 break-words">${cVal}</div>
+                    `;
+                    dynamicBox.appendChild(block);
+                });
+
             } else if (currentItem.quizType === 'text') {
                 stdBox.classList.remove('hidden');
-                fullBox.classList.add('hidden');
                 evalForm.classList.add('hidden');
 
                 document.querySelector('#eval-latin-block p').textContent = "Nazwa łacińska";
@@ -1967,7 +2411,6 @@
                 }
             } else if (currentItem.quizType === 'theory_single') {
                 stdBox.classList.remove('hidden');
-                fullBox.classList.add('hidden');
                 evalForm.classList.add('hidden');
                 evalPolish.classList.add('hidden');
                 evalLatin.classList.remove('hidden');
@@ -1983,7 +2426,6 @@
                 diffEl.innerHTML = generateFuzzyDiff(uSingle, correctVal || "");
                 corrEl.textContent = correctVal || "(Brak wpisu)";
             } else if (currentItem.quizType === 'theory_full') {
-                stdBox.classList.add('hidden');
                 fullBox.classList.remove('hidden');
 
                 fullBox.innerHTML = `
