@@ -77,9 +77,11 @@
             border-color: #10b981 !important;
             background-color: #ecfdf5 !important;
             transform: scale(0.99);
+            box-shadow: 0 20px 25px -5px rgba(16, 185, 129, 0.25) !important;
         }
         .species-card-drag-over {
-            border-top: 4px solid #10b981 !important;
+            border-top: 5px solid #10b981 !important;
+            background-color: #f0fdf4 !important;
         }
         .drag-handle {
             touch-action: none;
@@ -308,7 +310,7 @@
                 <!-- Informacja dla trybu własnego sortowania -->
                 <div id="custom-sort-info" class="hidden mb-6 bg-emerald-50 border border-emerald-200 text-emerald-900 px-4 py-3 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-2">
                     <span class="text-lg">≡</span>
-                    <span>Chwyć za uchwyt po lewej stronie karty i przeciągnij gatunek w dowolne miejsce lub użyj strzałek <strong>▲ / ▼</strong>. Kolejność zapisuje się automatycznie.</span>
+                    <span>Chwyć za uchwyt po lewej stronie karty i przeciągnij gatunek w dowolne miejsce (ekran przewinie się sam przy krawędziach) lub użyj strzałek <strong>▲ / ▼</strong>.</span>
                 </div>
                 
                 <div id="study-species-list" class="flex flex-col gap-6">
@@ -746,9 +748,19 @@
                 <span>←</span> Wróć do menu
             </button>
             <div class="bg-white rounded-3xl shadow-xl border border-slate-100 p-6 sm:p-8">
-                <div class="flex justify-between items-center mb-8 pb-4 border-b border-slate-100">
-                    <h2 class="text-2xl font-bold text-slate-800">Przeglądaj i Edytuj Bazę</h2>
-                    <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-bold" id="edit-count-badge">0 fiszek</span>
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 pb-4 border-b border-slate-100 gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">Przeglądaj i Edytuj Bazę</h2>
+                        <p class="text-xs text-slate-500 mt-1">Wyszukaj preparat po nazwie łacińskiej, polskiej, formie lub kategorii.</p>
+                    </div>
+                    <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-bold self-end sm:self-center" id="edit-count-badge">0 fiszek</span>
+                </div>
+
+                <!-- WYSZUKIWARKA W EDYCJI BAZY -->
+                <div class="mb-6 bg-slate-50 p-3.5 rounded-2xl border border-slate-200 flex items-center gap-2.5">
+                    <span class="text-slate-400 text-lg pl-1">🔍</span>
+                    <input type="text" id="edit-search-input" placeholder="Wpisz nazwę gatunku, formę (np. jajo) lub kategorię..." oninput="renderEditView()" class="w-full bg-transparent text-sm sm:text-base text-slate-800 font-medium outline-none placeholder-slate-400">
+                    <button type="button" id="clear-edit-search-btn" onclick="clearEditSearch()" class="hidden text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-2.5 py-1 rounded-lg transition">✕</button>
                 </div>
                 
                 <div id="edit-db-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -891,7 +903,7 @@
         let db = []; 
         let categories = ["Ogólne"];
         let customSpeciesOrder = []; 
-        let studyHideAnswersMode = false; // Stan trybu "kartka" w Kompendium
+        let studyHideAnswersMode = false; 
         let quizMainMode = 'classic'; 
         let quizClassicSubmode = 'standard'; 
         let quizTextSubmode = 'lat_pl';
@@ -1152,7 +1164,6 @@
             if (!studyHideAnswersMode) return;
             el.classList.toggle('is-masked');
 
-            // Aktualizacja przycisku w nagłówku danej karty gatunku
             const parentCard = el.closest('.species-study-card');
             if (parentCard) {
                 const btn = parentCard.querySelector('.species-reveal-btn');
@@ -1189,9 +1200,70 @@
         }
 
         /* ------------------------------------------------------------------ */
-        /* SORTOWANIE RĘCZNE I DRAG & DROP W BAZIE WIEDZY                     */
+        /* SORTOWANIE RĘCZNE + AUTO-SCROLL PRZY PRZECIĄGANIU (MYSZ & DOTYK)    */
         /* ------------------------------------------------------------------ */
         let draggedGroupKey = null;
+        let autoScrollSpeed = 0;
+        let autoScrollRafId = null;
+
+        function startAutoScrollLoop() {
+            if (autoScrollRafId !== null) return;
+            function step() {
+                if (!draggedGroupKey) {
+                    stopAutoScroll();
+                    return;
+                }
+                if (autoScrollSpeed !== 0) {
+                    window.scrollBy(0, autoScrollSpeed);
+                }
+                autoScrollRafId = requestAnimationFrame(step);
+            }
+            autoScrollRafId = requestAnimationFrame(step);
+        }
+
+        function stopAutoScroll() {
+            autoScrollSpeed = 0;
+            if (autoScrollRafId !== null) {
+                cancelAnimationFrame(autoScrollRafId);
+                autoScrollRafId = null;
+            }
+        }
+
+        function updateAutoScrollFromClientY(clientY) {
+            if (!draggedGroupKey || typeof clientY !== 'number' || clientY <= 0) {
+                autoScrollSpeed = 0;
+                return;
+            }
+            const vh = window.innerHeight;
+            const edgeThreshold = 135; // Strefa aktywacji przy górnej i dolnej krawędzi ekranu
+            const maxSpeed = 20;
+
+            if (clientY < edgeThreshold) {
+                const ratio = (edgeThreshold - clientY) / edgeThreshold;
+                autoScrollSpeed = -Math.max(4, Math.round(ratio * maxSpeed));
+            } else if (clientY > vh - edgeThreshold) {
+                const ratio = (clientY - (vh - edgeThreshold)) / edgeThreshold;
+                autoScrollSpeed = Math.max(4, Math.round(ratio * maxSpeed));
+            } else {
+                autoScrollSpeed = 0;
+            }
+        }
+
+        // Globalne śledzenie pozycji myszy podczas Drag & Drop na komputerze
+        document.addEventListener('dragover', (e) => {
+            if (draggedGroupKey) {
+                e.preventDefault();
+                updateAutoScrollFromClientY(e.clientY);
+            }
+        });
+
+        document.addEventListener('dragend', () => {
+            draggedGroupKey = null;
+            stopAutoScroll();
+            document.querySelectorAll('.species-study-card').forEach(el => {
+                el.classList.remove('species-card-dragging', 'species-card-drag-over');
+            });
+        });
 
         function syncCustomSpeciesOrder(allGroupKeys) {
             let changed = false;
@@ -1259,7 +1331,7 @@
                     if (!canReorder) {
                         infoBox.innerHTML = `<span class="text-lg">⚠️</span><span>Wyłącz wyszukiwanie i wybierz "Wszystkie kategorie", aby swobodnie przeciągać i zmieniać kolejność gatunków.</span>`;
                     } else {
-                        infoBox.innerHTML = `<span class="text-lg">≡</span><span>Chwyć za uchwyt po lewej stronie karty i przeciągnij gatunek w dowolne miejsce lub użyj strzałek <strong>▲ / ▼</strong>. Kolejność zapisuje się automatycznie.</span>`;
+                        infoBox.innerHTML = `<span class="text-lg">≡</span><span>Chwyć za uchwyt po lewej stronie karty i przeciągnij gatunek w dowolne miejsce (ekran przewinie się sam przy krawędziach) lub użyj strzałek <strong>▲ / ▼</strong>.</span>`;
                     }
                 } else {
                     infoBox.classList.add('hidden');
@@ -1375,6 +1447,7 @@
                 if (canReorder) {
                     cardDiv.addEventListener('dragover', (e) => {
                         e.preventDefault();
+                        updateAutoScrollFromClientY(e.clientY);
                         if (draggedGroupKey && draggedGroupKey !== sp.groupKey) {
                             cardDiv.classList.add('species-card-drag-over');
                         }
@@ -1384,9 +1457,12 @@
                     });
                     cardDiv.addEventListener('drop', (e) => {
                         e.preventDefault();
+                        stopAutoScroll();
                         cardDiv.classList.remove('species-card-drag-over');
                         if (draggedGroupKey && draggedGroupKey !== sp.groupKey) {
-                            reorderSpeciesByDrag(draggedGroupKey, sp.groupKey);
+                            const src = draggedGroupKey;
+                            draggedGroupKey = null;
+                            reorderSpeciesByDrag(src, sp.groupKey);
                         }
                     });
                 }
@@ -1480,7 +1556,7 @@
                 if (canReorder) {
                     reorderControlsHtml = `
                         <div class="flex items-center gap-1.5 mr-2 flex-shrink-0">
-                            <div class="drag-handle cursor-grab active:cursor-grabbing bg-slate-100 hover:bg-emerald-100 text-slate-500 hover:text-emerald-700 px-2.5 py-2 rounded-xl border border-slate-200 flex flex-col items-center justify-center transition" title="Przytrzymaj i przeciągnij">
+                            <div class="drag-handle cursor-grab active:cursor-grabbing bg-slate-100 hover:bg-emerald-100 text-slate-500 hover:text-emerald-700 px-3 py-2.5 rounded-xl border border-slate-200 flex flex-col items-center justify-center transition" title="Przytrzymaj i przeciągnij">
                                 <span class="text-lg font-extrabold leading-none">≡</span>
                             </div>
                             <div class="flex flex-col gap-1">
@@ -1544,22 +1620,31 @@
                             draggedGroupKey = sp.groupKey;
                             cardDiv.classList.add('species-card-dragging');
                             e.dataTransfer.effectAllowed = 'move';
+                            startAutoScrollLoop();
                         });
                         handle.addEventListener('dragend', () => {
                             draggedGroupKey = null;
+                            stopAutoScroll();
                             cardDiv.classList.remove('species-card-dragging');
                             document.querySelectorAll('.species-study-card').forEach(el => el.classList.remove('species-card-drag-over'));
                         });
 
-                        handle.addEventListener('touchstart', () => {
+                        // Obsługa dotykowa (Touch) z auto-scrollowaniem
+                        handle.addEventListener('touchstart', (e) => {
                             draggedGroupKey = sp.groupKey;
                             cardDiv.classList.add('species-card-dragging');
+                            if (e.touches && e.touches[0]) {
+                                updateAutoScrollFromClientY(e.touches[0].clientY);
+                            }
+                            startAutoScrollLoop();
                         }, { passive: true });
 
                         handle.addEventListener('touchmove', (e) => {
                             if (!draggedGroupKey) return;
                             e.preventDefault();
                             const touch = e.touches[0];
+                            updateAutoScrollFromClientY(touch.clientY);
+
                             const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
                             const targetCard = targetEl ? targetEl.closest('.species-study-card') : null;
                             
@@ -1575,13 +1660,23 @@
                             const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
                             const targetCard = targetEl ? targetEl.closest('.species-study-card') : null;
 
+                            const srcKey = draggedGroupKey;
+                            draggedGroupKey = null;
+                            stopAutoScroll();
+
                             cardDiv.classList.remove('species-card-dragging');
                             document.querySelectorAll('.species-study-card').forEach(el => el.classList.remove('species-card-drag-over'));
 
-                            if (targetCard && targetCard.dataset.groupKey && targetCard.dataset.groupKey !== draggedGroupKey) {
-                                reorderSpeciesByDrag(draggedGroupKey, targetCard.dataset.groupKey);
+                            if (targetCard && targetCard.dataset.groupKey && targetCard.dataset.groupKey !== srcKey) {
+                                reorderSpeciesByDrag(srcKey, targetCard.dataset.groupKey);
                             }
+                        });
+
+                        handle.addEventListener('touchcancel', () => {
                             draggedGroupKey = null;
+                            stopAutoScroll();
+                            cardDiv.classList.remove('species-card-dragging');
+                            document.querySelectorAll('.species-study-card').forEach(el => el.classList.remove('species-card-drag-over'));
                         });
                     }
                 }
@@ -2266,7 +2361,7 @@
                 categories: catsToExport,
                 cards: dbToExport,
                 customSpeciesOrder: customSpeciesOrder,
-                version: 9
+                version: 10
             };
 
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData));
@@ -2794,22 +2889,62 @@
         }
 
         function showEditView() {
+            const searchInp = document.getElementById('edit-search-input');
+            if (searchInp) searchInp.value = '';
             renderEditView();
             showView('edit-db-view');
         }
 
+        function clearEditSearch() {
+            const searchInp = document.getElementById('edit-search-input');
+            if (searchInp) {
+                searchInp.value = '';
+                searchInp.focus();
+            }
+            renderEditView();
+        }
+
         function renderEditView() {
             const list = document.getElementById('edit-db-list');
+            const badge = document.getElementById('edit-count-badge');
+            const searchInp = document.getElementById('edit-search-input');
+            const clearBtn = document.getElementById('clear-edit-search-btn');
+            
+            const query = searchInp ? searchInp.value.trim().toLowerCase() : '';
+            if (clearBtn) {
+                if (query.length > 0) clearBtn.classList.remove('hidden');
+                else clearBtn.classList.add('hidden');
+            }
+
             list.innerHTML = '';
             
             if (db.length === 0) {
+                if (badge) badge.textContent = '0 fiszek';
                 list.innerHTML = '<div class="col-span-full py-12 text-center text-slate-400 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">Baza jest pusta. Dodaj fiszki, aby móc je przeglądać i edytować.</div>';
                 return;
             }
 
-            const reversedDb = [...db].reverse();
+            const filteredDb = [...db].reverse().filter(card => {
+                if (!query) return true;
+                const matchLatin = (card.latinName || '').toLowerCase().includes(query);
+                const matchPolish = (card.polishName || '').toLowerCase().includes(query);
+                const matchForm = (card.form || '').toLowerCase().includes(query);
+                const matchCat = (card.category || '').toLowerCase().includes(query);
+                return matchLatin || matchPolish || matchForm || matchCat;
+            });
 
-            reversedDb.forEach(card => {
+            if (badge) {
+                badge.textContent = query 
+                    ? `Znaleziono: ${filteredDb.length} z ${db.length}` 
+                    : `${db.length} fiszek`;
+            }
+
+            if (filteredDb.length === 0) {
+                list.innerHTML = '<div class="col-span-full py-10 text-center text-slate-400 bg-slate-50 rounded-2xl border border-slate-200">Brak fiszek pasujących do wpisanej frazy.</div>';
+                return;
+            }
+
+            filteredDb.forEach(card => {
                 const cardDiv = document.createElement('div');
                 cardDiv.className = "flex flex-col sm:flex-row items-center sm:items-stretch gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm transition hover:shadow-md";
                 
