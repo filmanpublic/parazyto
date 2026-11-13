@@ -657,7 +657,7 @@
                         </div>
 
                         <div id="field-full-theory-hint" class="hidden text-center py-4 text-slate-500 bg-slate-50 rounded-2xl border border-slate-200 text-sm">
-                            Przypomnij sobie w pamięci pełne dane tego gatunku (postać inwazyjna, diagnostyczna, wrota, bytowanie, objawy itp.), a następnie kliknij <strong>Sprawdź / Odkryj Kartę</strong>.
+                            Przypomnij sobie w pamięci pełne dane tego gatunku (postać inwazyjna, diagnostyczna, wrota, bytowanie, objawy itp.), a następnie kliknij <strong>Sprawdź</strong> lub wciśnij <strong>Enter</strong>.
                         </div>
                         
                         <button onclick="checkAnswer()" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-200 transition text-lg tracking-wide">
@@ -694,7 +694,7 @@
                         <div id="eval-full-card-box" class="hidden mb-6 w-full text-left">
                         </div>
 
-                        <p class="text-sm font-semibold text-slate-500 mb-3 uppercase tracking-wide">Oceń swoją odpowiedź:</p>
+                        <p class="text-sm font-semibold text-slate-500 mb-3 uppercase tracking-wide">Oceń swoją odpowiedź (klawisze 1–4):</p>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
                             <button onclick="makeDecision('dobra')" class="p-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl shadow-md transition flex flex-col items-center justify-center">
                                 <span>1. Dobra Odpowiedź</span>
@@ -1235,7 +1235,7 @@
                 return;
             }
             const vh = window.innerHeight;
-            const edgeThreshold = 135; // Strefa aktywacji przy górnej i dolnej krawędzi ekranu
+            const edgeThreshold = 135;
             const maxSpeed = 20;
 
             if (clientY < edgeThreshold) {
@@ -1249,7 +1249,6 @@
             }
         }
 
-        // Globalne śledzenie pozycji myszy podczas Drag & Drop na komputerze
         document.addEventListener('dragover', (e) => {
             if (draggedGroupKey) {
                 e.preventDefault();
@@ -1629,7 +1628,6 @@
                             document.querySelectorAll('.species-study-card').forEach(el => el.classList.remove('species-card-drag-over'));
                         });
 
-                        // Obsługa dotykowa (Touch) z auto-scrollowaniem
                         handle.addEventListener('touchstart', (e) => {
                             draggedGroupKey = sp.groupKey;
                             cardDiv.classList.add('species-card-dragging');
@@ -2361,7 +2359,7 @@
                 categories: catsToExport,
                 cards: dbToExport,
                 customSpeciesOrder: customSpeciesOrder,
-                version: 10
+                version: 11
             };
 
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData));
@@ -2660,6 +2658,10 @@
 
                 textLabel.textContent = "Wiedza Kompletna (Karta Gatunku):";
                 textPrompt.textContent = card.latinName || card.polishName;
+
+                if (document.activeElement && typeof document.activeElement.blur === 'function') {
+                    document.activeElement.blur();
+                }
             }
             
             document.getElementById('input-zone').classList.remove('hidden');
@@ -2675,6 +2677,12 @@
 
         function checkAnswer() {
             const card = db[currentItem.cardIndex];
+            
+            // Zdejmujemy fokus z pola tekstowego, aby klawisze 1-4 od razu działały jako skróty oceny
+            if (document.activeElement && typeof document.activeElement.blur === 'function') {
+                document.activeElement.blur();
+            }
+
             document.getElementById('input-zone').classList.add('hidden');
             
             const evalZone = document.getElementById('evaluation-zone');
@@ -3072,6 +3080,62 @@
             }
             closeEditModal();
         }
+
+        /* ------------------------------------------------------------------ */
+        /* SKRÓTY KLAWIATUROWE (1-4 OCENA ODPOWIEDZI, ENTER, ESCAPE)          */
+        /* ------------------------------------------------------------------ */
+        document.addEventListener('keydown', function(event) {
+            // Zamknięcie powiększenia zdjęcia klawiszem Escape
+            const zoomModal = document.getElementById('zoomModal');
+            if (zoomModal && zoomModal.classList.contains('active')) {
+                if (event.key === 'Escape') {
+                    closeZoomModal();
+                }
+                return;
+            }
+
+            // Obsługa skrótów wewnątrz aktywnego quizu
+            const quizView = document.getElementById('quiz-view');
+            if (!quizView || !quizView.classList.contains('active')) return;
+
+            // Zabezpieczenie: ignoruj skróty, jeśli fokus jest w polu wpisywania
+            const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+            if (activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select') return;
+
+            const inputZone = document.getElementById('input-zone');
+            const evalZone = document.getElementById('evaluation-zone');
+
+            // Jeśli jesteśmy na ekranie pytania bez pól tekstowych (np. Karta Gatunku) - Enter odkrywa odpowiedź
+            if (inputZone && !inputZone.classList.contains('hidden')) {
+                if (event.key === 'Enter' && currentItem && currentItem.quizType === 'theory_full') {
+                    event.preventDefault();
+                    checkAnswer();
+                }
+                return;
+            }
+
+            // Jeśli widoczny jest panel oceny odpowiedzi - klawisze 1, 2, 3, 4 wybierają ocenę
+            if (evalZone && !evalZone.classList.contains('hidden')) {
+                switch (event.key) {
+                    case '1':
+                        event.preventDefault();
+                        makeDecision('dobra');
+                        break;
+                    case '2':
+                        event.preventDefault();
+                        makeDecision('powtorz');
+                        break;
+                    case '3':
+                        event.preventDefault();
+                        makeDecision('zla');
+                        break;
+                    case '4':
+                        event.preventDefault();
+                        makeDecision('douczanie');
+                        break;
+                }
+            }
+        });
 
         window.onload = initDB;
     </script>
