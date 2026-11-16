@@ -565,6 +565,14 @@
                         </div>
                         <span class="text-slate-400">→</span>
                     </button>
+
+                    <button onclick="selectTheorySubmode('reverse')" class="bg-white border-2 border-slate-200 hover:border-amber-500 hover:bg-amber-50 p-5 rounded-2xl shadow-sm transition text-left flex items-center justify-between">
+                        <div>
+                            <span class="font-bold text-lg text-slate-800 block mb-1">🔍 3. Odgadnij Pasożyta po Opisie</span>
+                            <span class="text-slate-500 text-xs">Wybierasz typy informacji (np. objawy, wrota), a następnie wpisujesz nazwę łacińską i polską.</span>
+                        </div>
+                        <span class="text-slate-400">→</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -588,6 +596,19 @@
                         </div>
                     </div>
                     <div id="custom-fields-checkboxes" class="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-indigo-50/40 p-3.5 rounded-2xl border border-indigo-100 max-h-52 overflow-y-auto">
+                    </div>
+                </div>
+
+                <!-- WYBÓR TYPÓW OPISU (Tylko dla trybu Odgadnij Pasożyta po Opisie) -->
+                <div id="reverse-fields-setup-section" class="hidden border-b border-slate-100 pb-6 mb-6 text-left">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="font-bold text-amber-900 text-sm">🔍 Z jakich informacji mam pytać:</span>
+                        <div class="flex gap-1.5">
+                            <button type="button" onclick="toggleAllReverseFields(true)" class="text-xs bg-amber-100 text-amber-800 hover:bg-amber-200 px-2.5 py-1 rounded-lg font-semibold transition">Wszystkie</button>
+                            <button type="button" onclick="toggleAllReverseFields(false)" class="text-xs bg-slate-100 text-slate-600 hover:bg-slate-200 px-2.5 py-1 rounded-lg font-semibold transition">Odznacz</button>
+                        </div>
+                    </div>
+                    <div id="reverse-fields-checkboxes" class="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-amber-50/50 p-3.5 rounded-2xl border border-amber-200/70 max-h-52 overflow-y-auto">
                     </div>
                 </div>
 
@@ -656,7 +677,7 @@
 
                 <div id="quiz-text-card" class="hidden bg-slate-900 text-white w-full py-10 px-6 flex flex-col items-center justify-center text-center shadow-inner">
                     <span id="quiz-text-label" class="text-xs uppercase font-bold tracking-widest text-emerald-400 mb-2">Pytanie</span>
-                    <h3 id="quiz-text-prompt" class="text-2xl sm:text-3xl font-extrabold tracking-wide leading-tight break-words max-w-xl">...</h3>
+                    <h3 id="quiz-text-prompt" class="text-xl sm:text-2xl font-extrabold tracking-wide leading-snug break-words max-w-xl whitespace-pre-line">...</h3>
                 </div>
                 
                 <div class="p-6 sm:p-8 flex flex-col">
@@ -1065,6 +1086,17 @@
             { key: 'diseaseName', label: 'Nazwa choroby 🏥' },
             { key: 'detectionMethods', label: 'Metody wykrywania 🧫' },
             { key: 'symptoms', label: 'Najważniejsze objawy ⚠️' },
+            { key: 'importantNotes', label: 'Ważne uwagi 📌' }
+        ];
+
+        const THEORY_FIELDS_META = [
+            { key: 'symptoms', label: 'Najważniejsze objawy ⚠️' },
+            { key: 'diseaseName', label: 'Nazwa choroby 🏥' },
+            { key: 'entryPortal', label: 'Wrota zakażenia 🚪' },
+            { key: 'invasiveForm', label: 'Postać inwazyjna 🪱' },
+            { key: 'diagnosticForm', label: 'Postać diagnostyczna 🔬' },
+            { key: 'reproductionSite', label: 'Miejsce rozmnażania / bytowania 📍' },
+            { key: 'detectionMethods', label: 'Metody wykrywania 🧪' },
             { key: 'importantNotes', label: 'Ważne uwagi 📌' }
         ];
 
@@ -1980,6 +2012,43 @@
             updateAvailableQuestionsUI();
         }
 
+        function renderReverseFieldsSelector() {
+            const section = document.getElementById('reverse-fields-setup-section');
+            const container = document.getElementById('reverse-fields-checkboxes');
+
+            if (quizMainMode === 'theory' && quizTheorySubmode === 'reverse') {
+                section.classList.remove('hidden');
+                if (container.children.length === 0) {
+                    THEORY_FIELDS_META.forEach(f => {
+                        const label = document.createElement('label');
+                        label.className = "flex items-center gap-2 p-2 rounded-xl bg-white border border-amber-100 cursor-pointer hover:bg-amber-50 transition text-xs font-semibold text-slate-700";
+
+                        const cb = document.createElement('input');
+                        cb.type = "checkbox";
+                        cb.value = f.key;
+                        cb.checked = true;
+                        cb.className = "reverse-quiz-field-cb w-4 h-4 text-amber-600 rounded focus:ring-amber-500";
+                        cb.onchange = () => {
+                            refreshCategoryCounts();
+                            updateAvailableQuestionsUI();
+                        };
+
+                        label.appendChild(cb);
+                        label.appendChild(document.createTextNode(f.label));
+                        container.appendChild(label);
+                    });
+                }
+            } else {
+                section.classList.add('hidden');
+            }
+        }
+
+        function toggleAllReverseFields(state) {
+            document.querySelectorAll('.reverse-quiz-field-cb').forEach(cb => cb.checked = state);
+            refreshCategoryCounts();
+            updateAvailableQuestionsUI();
+        }
+
         function onIncludePreviewToggle() {
             refreshCategoryCounts();
             updateAvailableQuestionsUI();
@@ -2066,6 +2135,36 @@
                             }
                         }
                     });
+                } else if (quizTheorySubmode === 'reverse') {
+                    const checkedReverseCbs = document.querySelectorAll('.reverse-quiz-field-cb');
+                    const allowedKeys = checkedReverseCbs.length > 0
+                        ? Array.from(checkedReverseCbs).filter(cb => cb.checked).map(cb => cb.value)
+                        : THEORY_FIELDS_META.map(f => f.key);
+
+                    if (allowedKeys.length > 0) {
+                        const speciesSeen = new Set();
+                        db.forEach((card, index) => {
+                            if (selectedCats.includes(card.category) && (includePreview || isCardIncludedInQuiz(card))) {
+                                const hasSpeciesName = (card.latinName && card.latinName.trim() !== '') || (card.polishName && card.polishName.trim() !== '');
+                                if (!hasSpeciesName) return;
+
+                                const speciesKey = ((card.latinName || '').trim() || (card.polishName || '').trim()).toLowerCase();
+                                if (speciesSeen.has(speciesKey)) return;
+
+                                const availableFields = THEORY_FIELDS_META.filter(f => allowedKeys.includes(f.key) && card[f.key] && card[f.key].trim() !== '');
+                                if (availableFields.length > 0) {
+                                    speciesSeen.add(speciesKey);
+                                    const pickedField = availableFields[Math.floor(Math.random() * availableFields.length)];
+                                    rawPool.push({
+                                        cardIndex: index,
+                                        quizType: 'theory_reverse',
+                                        fieldKey: pickedField.key,
+                                        fieldLabel: pickedField.label
+                                    });
+                                }
+                            }
+                        });
+                    }
                 }
             }
             return rawPool;
@@ -2098,6 +2197,7 @@
 
         function renderCategorySetup() {
             renderCustomFieldsSelector();
+            renderReverseFieldsSelector();
 
             const previewSection = document.getElementById('include-preview-images-section');
             const hasAnyPreviewCards = db.some(c => !isCardIncludedInQuiz(c));
@@ -2201,6 +2301,14 @@
             if (quizMainMode === 'classic' && quizClassicSubmode === 'custom_fields') {
                 if (getSelectedCustomFields().length === 0) {
                     showMessage("Zaznacz przynajmniej jedno zagadnienie do odpytania!");
+                    return;
+                }
+            }
+
+            if (quizMainMode === 'theory' && quizTheorySubmode === 'reverse') {
+                const checkedReverse = document.querySelectorAll('.reverse-quiz-field-cb:checked');
+                if (checkedReverse.length === 0) {
+                    showMessage("Zaznacz przynajmniej jeden typ informacji!");
                     return;
                 }
             }
@@ -2941,6 +3049,22 @@
                 if (document.activeElement && typeof document.activeElement.blur === 'function') {
                     document.activeElement.blur();
                 }
+            } else if (currentItem.quizType === 'theory_reverse') {
+                imgContainer.classList.add('hidden');
+                textCard.classList.remove('hidden');
+
+                const textLabel = document.getElementById('quiz-text-label');
+                const textPrompt = document.getElementById('quiz-text-prompt');
+
+                textLabel.textContent = `Jaki to pasożyt? — ${currentItem.fieldLabel}:`;
+                textPrompt.textContent = card[currentItem.fieldKey] || "...";
+
+                latinCont.classList.remove('hidden');
+                if (card.polishName && card.polishName.trim() !== '') {
+                    polishCont.classList.remove('hidden');
+                }
+
+                setTimeout(() => document.getElementById('guess-latin').focus(), 100);
             }
             
             document.getElementById('input-zone').classList.remove('hidden');
@@ -2950,8 +3074,21 @@
         }
 
         function handleEnterKey(currentField) {
-            if (currentField === 'latin') document.getElementById('guess-polish').focus();
-            else if (currentField === 'polish') document.getElementById('guess-form').focus();
+            if (currentField === 'latin') {
+                const polishCont = document.getElementById('field-polish-container');
+                if (polishCont && !polishCont.classList.contains('hidden')) {
+                    document.getElementById('guess-polish').focus();
+                } else {
+                    checkAnswer();
+                }
+            } else if (currentField === 'polish') {
+                const formCont = document.getElementById('field-form-container');
+                if (formCont && !formCont.classList.contains('hidden')) {
+                    document.getElementById('guess-form').focus();
+                } else {
+                    checkAnswer();
+                }
+            }
         }
 
         function checkAnswer() {
@@ -3008,6 +3145,24 @@
                 setEvalBlock('latin', uLatin, card.latinName);
                 setEvalBlock('polish', uPolish, card.polishName);
                 setEvalBlock('form', uForm, card.form);
+
+            } else if (currentItem.quizType === 'theory_reverse') {
+                stdBox.classList.remove('hidden');
+                evalLatin.classList.remove('hidden');
+                evalForm.classList.add('hidden');
+
+                document.querySelector('#eval-latin-block p').textContent = "Nazwa łacińska";
+
+                const uLatin = document.getElementById('guess-latin').value.trim();
+                setEvalBlock('latin', uLatin, card.latinName);
+
+                if (card.polishName && card.polishName.trim() !== '') {
+                    evalPolish.classList.remove('hidden');
+                    const uPolish = document.getElementById('guess-polish').value.trim();
+                    setEvalBlock('polish', uPolish, card.polishName);
+                } else {
+                    evalPolish.classList.add('hidden');
+                }
 
             } else if (currentItem.quizType === 'classic_custom') {
                 dynamicBox.classList.remove('hidden');
